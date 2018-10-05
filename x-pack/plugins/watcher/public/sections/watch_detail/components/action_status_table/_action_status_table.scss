@@ -1,0 +1,23 @@
+/**
+ * Action status table
+ *
+ * 1. So we can display the whole error message on multiple lines
+ */
+
+ .watcher__action-status-table {
+    &__errors {
+        white-space: initial; /* [1] */
+    }
+
+    &__list-errors {
+        li {
+            padding-bottom: $euiSizeXS * 0.5;
+            margin-bottom: $euiSizeXS * 0.5;
+            border-bottom: $euiBorderThin;
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+}

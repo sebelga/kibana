@@ -21,6 +21,9 @@
           State
         </sortable-column>
       </th>
+      <th scope="col" class="kuiTableHeaderCell" ng-if="actionStatusTable.actionErrors">
+          <span class="kuiTableHeaderCell__liner">Errors</span>
+      </th>
       <th scope="col" class="kuiTableHeaderCell">
       </th>
     </tr>
@@ -37,6 +40,15 @@
         <div class="kuiTableRowCell__liner">
           <action-state-icon action-status="actionStatus"></action-state-icon>
           {{ actionStatus.state }}
+        </div>
+      </td>
+      <td class="kuiTableRowCell">
+        <div class="kuiTableRowCell__liner watcher__action-status-table__errors">
+          <ul
+            ng-if="actionStatusTable.actionErrors && actionStatusTable.actionErrors[actionStatus.id]"
+            class="watcher__action-status-table__list-errors">
+            <li ng-repeat="error in actionStatusTable.actionErrors[actionStatus.id]">{{ error.message }}</li>
+          </ul>
         </div>
       </td>
       <td class="kuiTableRowCell">

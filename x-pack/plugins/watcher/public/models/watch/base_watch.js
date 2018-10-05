@@ -8,6 +8,7 @@ import { getSearchValue } from 'plugins/watcher/lib/get_search_value';
 import { get, isEqual, remove, map, merge } from 'lodash';
 import { Action } from '../action';
 import { WatchStatus } from '../watch_status';
+import { WatchErrors } from '../watch_errors';
 import { createActionId } from './lib/create_action_id';
 import { checkActionIdCollision } from './lib/check_action_id_collision';
 
@@ -30,6 +31,7 @@ export class BaseWatch {
     this.name = get(props, 'name', '');
     this.isSystemWatch = Boolean(get(props, 'isSystemWatch'));
     this.watchStatus = WatchStatus.fromUpstreamJson(get(props, 'watchStatus'));
+    this.watchErrors = WatchErrors.fromUpstreamJson(get(props, 'watchErrors'));
 
     const actions = get(props, 'actions', []);
     this.actions = actions.map(Action.fromUpstreamJson);

@@ -19,6 +19,9 @@ export const ACTION_STATES = {
   FIRING: 'Firing',
 
   // Action has failed
-  ERROR: 'Error'
+  ERROR: 'Error',
+
+  // Action has a configuration error
+  CONFIG_ERROR: 'Config Error'
 
 };

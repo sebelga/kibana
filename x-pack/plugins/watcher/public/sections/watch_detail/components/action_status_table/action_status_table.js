@@ -16,6 +16,7 @@ app.directive('actionStatusTable', function () {
     template: template,
     scope: {
       actionStatuses: '=',
+      actionErrors: '=',
       sortField: '=',
       sortReverse: '=',
       onSortChange: '=',

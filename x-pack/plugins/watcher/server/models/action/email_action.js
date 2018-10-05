@@ -9,9 +9,9 @@ import { BaseAction } from './base_action';
 import { ACTION_TYPES } from '../../../common/constants';
 
 export class EmailAction extends BaseAction {
-  constructor(props) {
+  constructor(props, errors) {
     props.type = ACTION_TYPES.EMAIL;
-    super(props);
+    super(props, errors);
 
     this.to = props.to;
     this.subject = props.subject;
@@ -37,7 +37,7 @@ export class EmailAction extends BaseAction {
     Object.assign(props, {
       to: json.to,
       subject: json.subject,
-      body: json.body
+      body: json.body,
     });
 
     return new EmailAction(props);
@@ -67,15 +67,10 @@ export class EmailAction extends BaseAction {
   }
 
   // From Elasticsearch
-  static fromUpstreamJson(json) {
+  static fromUpstreamJson(json, options = { throwExceptions: {} }) {
     const props = super.getPropsFromUpstreamJson(json);
-
-    if (!json.actionJson.email) {
-      throw badRequest('json argument must contain an actionJson.email property');
-    }
-    if (!json.actionJson.email.to) {
-      throw badRequest('json argument must contain an actionJson.email.to property');
-    }
+    const doThrowException = options.throwExceptions.Action !== false;
+    const { errors } = this.validateJson(json, doThrowException);
 
     const optionalFields = {};
     if (json.actionJson.email.subject) {
@@ -91,7 +86,37 @@ export class EmailAction extends BaseAction {
       ...optionalFields,
     });
 
-    return new EmailAction(props);
+    return new EmailAction(props, errors);
+  }
+
+  static validateJson(json, doThrowException) {
+    const errors = [];
+
+    if (!json.actionJson.email) {
+      const message = 'json argument must contain an actionJson.email property';
+
+      if (doThrowException) {
+        throw badRequest(message);
+      }
+
+      errors.push({
+        code: 'ERR_PROP_MISSING',
+        message
+      });
+    }
+
+    if (!json.actionJson.email.to) {
+      const message = 'json argument must contain an actionJson.email.to property';
+      if (doThrowException) {
+        throw badRequest(message);
+      }
+      errors.push({
+        code: 'ERR_PROP_MISSING',
+        message
+      });
+    }
+
+    return { errors: errors.length ? errors : null };
   }
 
   /*

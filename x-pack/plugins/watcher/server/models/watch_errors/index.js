@@ -4,15 +4,4 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-export const WATCH_STATES = {
-
-  DISABLED: 'Disabled',
-
-  OK: 'OK',
-
-  FIRING: 'Firing',
-
-  ERROR: 'Error!',
-
-  CONFIG_ERROR: 'Config Error!',
-};
+export { WatchErrors } from './watch_errors';

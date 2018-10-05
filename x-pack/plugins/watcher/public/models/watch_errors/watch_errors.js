@@ -4,15 +4,14 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-export const WATCH_STATES = {
+import { get } from 'lodash';
 
-  DISABLED: 'Disabled',
+export class WatchErrors {
+  constructor(props = {}) {
+    this.actionErrors = get(props, 'actions');
+  }
 
-  OK: 'OK',
-
-  FIRING: 'Firing',
-
-  ERROR: 'Error!',
-
-  CONFIG_ERROR: 'Config Error!',
-};
+  static fromUpstreamJson(upstreamWatchStatus) {
+    return new WatchErrors(upstreamWatchStatus);
+  }
+}

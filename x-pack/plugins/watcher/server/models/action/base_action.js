@@ -7,9 +7,10 @@
 import { badRequest } from 'boom';
 
 export class BaseAction {
-  constructor(props) {
+  constructor(props, errors) {
     this.id = props.id;
     this.type = props.type;
+    this.errors = errors;
   }
 
   get downstreamJson() {

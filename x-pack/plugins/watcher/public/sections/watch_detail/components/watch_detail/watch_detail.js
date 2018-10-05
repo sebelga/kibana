@@ -54,38 +54,39 @@ app.directive('watchDetail', function ($injector) {
 
         this.actionStatusTableSortField = 'id';
         this.actionStatusTableSortReverse = false;
+        this.actionErrors = (this.watch.watchErrors && this.watch.watchErrors.actionErrors) || null;
 
-        this.omitBreadcrumbPages = [
-          'watch',
-          this.watch.id
-        ];
+        this.omitBreadcrumbPages = ['watch', this.watch.id];
         this.breadcrumb = this.watch.displayName;
 
         // Reload watch history periodically
-        const refreshInterval = $interval(() => this.loadWatchHistory(), REFRESH_INTERVALS.WATCH_HISTORY);
+        const refreshInterval = $interval(
+          () => this.loadWatchHistory(),
+          REFRESH_INTERVALS.WATCH_HISTORY
+        );
         $scope.$on('$destroy', () => $interval.cancel(refreshInterval));
 
         // react to data and UI changes
-        $scope.$watchMulti([
-          'watchDetail.actionStatusTableSortField',
-          'watchDetail.actionStatusTableSortReverse',
-        ], this.applySortToActionStatusTable);
+        $scope.$watchMulti(
+          ['watchDetail.actionStatusTableSortField', 'watchDetail.actionStatusTableSortReverse'],
+          this.applySortToActionStatusTable
+        );
       }
 
       loadWatchHistory = () => {
-        return watchService.loadWatchHistory(this.watch.id, this.historyRange)
+        return watchService
+          .loadWatchHistory(this.watch.id, this.historyRange)
           .then(watchHistoryItems => {
             this.isHistoryLoading = false;
             this.watchHistoryItems = watchHistoryItems;
           })
           .catch(err => {
-            return licenseService.checkValidity()
-              .then(() => toastNotifications.addDanger(err));
+            return licenseService.checkValidity().then(() => toastNotifications.addDanger(err));
           });
-      }
+      };
 
       // update the watch history items when the time range changes
-      onHistoryRangeChange = (range) => {
+      onHistoryRangeChange = range => {
         this.historyRange = range;
         this.isHistoryLoading = true;
         return this.loadWatchHistory();

@@ -25,14 +25,14 @@ export class Action {
   }
 
   // From Elasticsearch
-  static fromUpstreamJson(json) {
+  static fromUpstreamJson(json, options) {
     if (!json.actionJson) {
       throw badRequest('json argument must contain an actionJson property');
     }
 
     const type = getActionType(json.actionJson);
     const ActionType = ActionTypes[type] || UnknownAction;
-    return ActionType.fromUpstreamJson(json);
+    return ActionType.fromUpstreamJson(json, options);
   }
 
   // From Kibana

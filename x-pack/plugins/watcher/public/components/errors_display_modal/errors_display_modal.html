@@ -1,0 +1,10 @@
+<div class="kuiModal">
+    <div class="kuiModalHeader">
+        <h1 class="kuiModalHeader__title">{{ vm.title }}</h1>
+    </div>
+    <div class="kuiModalBody">
+        <ul>
+            <li class="kuiVerticalRhythm" ng-repeat="error in vm.errors">{{ error.message }}</li>
+        </ul>
+    </div>
+</div>

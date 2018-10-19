@@ -14,8 +14,10 @@ import 'ui/table_info';
 import 'plugins/watcher/components/tool_bar_selected_count';
 import 'plugins/watcher/services/watch';
 import 'plugins/watcher/services/license';
+import 'plugins/watcher/components/errors_display_modal';
 
 import template from './watch_detail.html';
+import errorsDisplayTemplate from 'plugins/watcher/components/errors_display_modal/errors_display_modal.html';
 import '../watch_history';
 import '../action_status_table';
 import { REFRESH_INTERVALS } from 'plugins/watcher/../common/constants';
@@ -33,6 +35,7 @@ app.directive('watchDetail', function ($injector) {
 
   const $filter = $injector.get('$filter');
   const orderBy = $filter('orderBy');
+  const $modal = $injector.get('$modal');
 
   moment.tz.setDefault(config.get('dateFormat:tz'));
 
@@ -123,6 +126,29 @@ app.directive('watchDetail', function ($injector) {
             return licenseService.checkValidity()
               .then(() => toastNotifications.addDanger(err));
           });
+      }
+
+      showErrors = (actionId, errors) => {
+        const errorsModal = $modal.open({
+          template: errorsDisplayTemplate,
+          controller: 'WatcherErrorsDisplayController',
+          controllerAs: 'vm',
+          backdrop: true,
+          keyboard: true,
+          resolve: {
+            params: function () {
+              return {
+                title: `Errors in the "${actionId}" Action`,
+                errors,
+              };
+            }
+          }
+        });
+
+        errorsModal.result.catch(() => {
+          // We need to add this empty Promise catch to avoid
+          // a console error "Possibly unhandled rejection"
+        });
       }
 
       /**

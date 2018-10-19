@@ -44,11 +44,10 @@
       </td>
       <td class="kuiTableRowCell">
         <div class="kuiTableRowCell__liner watcher__action-status-table__errors">
-          <ul
+          <a
+            role="button"
             ng-if="actionStatusTable.actionErrors && actionStatusTable.actionErrors[actionStatus.id]"
-            class="watcher__action-status-table__list-errors">
-            <li ng-repeat="error in actionStatusTable.actionErrors[actionStatus.id]">{{ error.message }}</li>
-          </ul>
+            ng-click="actionStatusTable.showErrors(actionStatus.id, actionStatusTable.actionErrors[actionStatus.id])">{{actionStatusTable.getLabelErrors(actionStatus.id)}}</a>
         </div>
       </td>
       <td class="kuiTableRowCell">

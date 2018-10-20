@@ -133,8 +133,9 @@ app.directive('watchDetail', function ($injector) {
           template: errorsDisplayTemplate,
           controller: 'WatcherErrorsDisplayController',
           controllerAs: 'vm',
-          backdrop: true,
+          backdrop: 'static',
           keyboard: true,
+          ariaLabelledBy: 'watcher__error-display-modal-title',
           resolve: {
             params: function () {
               return {

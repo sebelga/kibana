@@ -11,4 +11,8 @@ const app = uiModules.get('xpack/watcher');
 app.controller('WatcherErrorsDisplayController', function WatcherErrorsDisplayController($scope, $modalInstance, params) {
   this.title =  params.title;
   this.errors = params.errors;
+
+  this.close = function close() {
+    $modalInstance.close();
+  };
 });

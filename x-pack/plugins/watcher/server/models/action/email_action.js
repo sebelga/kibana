@@ -4,9 +4,8 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { badRequest } from 'boom';
 import { BaseAction } from './base_action';
-import { ACTION_TYPES } from '../../../common/constants';
+import { ACTION_TYPES, ERROR_CODES } from '../../../common/constants';
 import { i18n } from '@kbn/i18n';
 
 export class EmailAction extends BaseAction {
@@ -68,10 +67,9 @@ export class EmailAction extends BaseAction {
   }
 
   // From Elasticsearch
-  static fromUpstreamJson(json, options = { throwExceptions: {} }) {
+  static fromUpstreamJson(json) {
     const props = super.getPropsFromUpstreamJson(json);
-    const doThrowException = options.throwExceptions.Action !== false;
-    const { errors } = this.validateJson(json, doThrowException);
+    const { errors } = this.validateJson(json);
 
     const optionalFields = {};
     if (json.actionJson.email.subject) {
@@ -87,10 +85,12 @@ export class EmailAction extends BaseAction {
       ...optionalFields,
     });
 
-    return new EmailAction(props, errors);
+    const action = new EmailAction(props, errors);
+
+    return { action, errors };
   }
 
-  static validateJson(json, doThrowException) {
+  static validateJson(json) {
     const errors = [];
 
     if (!json.actionJson.email) {
@@ -101,12 +101,8 @@ export class EmailAction extends BaseAction {
         }
       });
 
-      if (doThrowException) {
-        throw badRequest(message);
-      }
-
       errors.push({
-        code: 'ERR_PROP_MISSING',
+        code: ERROR_CODES.ERR_PROP_MISSING,
         message
       });
     }
@@ -119,11 +115,8 @@ export class EmailAction extends BaseAction {
         }
       });
 
-      if (doThrowException) {
-        throw badRequest(message);
-      }
       errors.push({
-        code: 'ERR_PROP_MISSING',
+        code: ERROR_CODES.ERR_PROP_MISSING,
         message
       });
     }

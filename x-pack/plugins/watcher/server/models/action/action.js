@@ -26,7 +26,7 @@ export class Action {
   }
 
   // From Elasticsearch
-  static fromUpstreamJson(json, options) {
+  static fromUpstreamJson(json, options = { throwExceptions: {} }) {
     if (!json.actionJson) {
       throw badRequest(
         i18n.translate('xpack.watcher.models.action.absenceOfActionJsonPropertyBadRequestMessage', {
@@ -40,7 +40,21 @@ export class Action {
 
     const type = getActionType(json.actionJson);
     const ActionType = ActionTypes[type] || UnknownAction;
-    return ActionType.fromUpstreamJson(json, options);
+
+    const { action, errors } = ActionType.fromUpstreamJson(json, options);
+    const doThrowException = options.throwExceptions.Action !== false;
+
+    if (errors && doThrowException) {
+      const allMessages = errors.reduce((message, error) => {
+        if (message) {
+          return `${message}, ${error.message}`;
+        }
+        return error.message;
+      }, '');
+      throw badRequest(allMessages);
+    }
+
+    return action;
   }
 
   // From Kibana

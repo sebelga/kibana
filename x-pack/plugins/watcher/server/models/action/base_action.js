@@ -5,6 +5,7 @@
  */
 
 import { badRequest } from 'boom';
+import { i18n } from '@kbn/i18n';
 
 export class BaseAction {
   constructor(props, errors) {
@@ -35,7 +36,14 @@ export class BaseAction {
 
   static getPropsFromUpstreamJson(json) {
     if (!json.id) {
-      throw badRequest('json argument must contain an id property');
+      throw badRequest(
+        i18n.translate('xpack.watcher.models.baseAction.absenceOfIdPropertyBadRequestMessage', {
+          defaultMessage: 'json argument must contain an {id} property',
+          values: {
+            id: 'id'
+          }
+        }),
+      );
     }
 
     return {

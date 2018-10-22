@@ -6,6 +6,7 @@
 
 import { get, map, pick } from 'lodash';
 import { badRequest } from 'boom';
+import { i18n } from '@kbn/i18n';
 import { Action } from '../action';
 import { WatchStatus } from '../watch_status';
 import { WatchErrors } from '../watch_errors';
@@ -91,13 +92,34 @@ export class BaseWatch {
   // from Elasticsearch
   static getPropsFromUpstreamJson(json, options) {
     if (!json.id) {
-      throw badRequest('json argument must contain an id property');
+      throw badRequest(
+        i18n.translate('xpack.watcher.models.baseWatch.absenceOfIdPropertyBadRequestMessage', {
+          defaultMessage: 'json argument must contain an {id} property',
+          values: {
+            id: 'id'
+          }
+        }),
+      );
     }
     if (!json.watchJson) {
-      throw badRequest('json argument must contain a watchJson property');
+      throw badRequest(
+        i18n.translate('xpack.watcher.models.baseWatch.absenceOfWatchJsonPropertyBadRequestMessage', {
+          defaultMessage: 'json argument must contain a {watchJson} property',
+          values: {
+            watchJson: 'watchJson'
+          }
+        }),
+      );
     }
     if (!json.watchStatusJson) {
-      throw badRequest('json argument must contain a watchStatusJson property');
+      throw badRequest(
+        i18n.translate('xpack.watcher.models.baseWatch.absenceOfWatchStatusJsonPropertyBadRequestMessage', {
+          defaultMessage: 'json argument must contain a {watchStatusJson} property',
+          values: {
+            watchStatusJson: 'watchStatusJson'
+          }
+        }),
+      );
     }
 
     const id = json.id;

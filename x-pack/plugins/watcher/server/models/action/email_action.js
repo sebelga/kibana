@@ -7,6 +7,7 @@
 import { badRequest } from 'boom';
 import { BaseAction } from './base_action';
 import { ACTION_TYPES } from '../../../common/constants';
+import { i18n } from '@kbn/i18n';
 
 export class EmailAction extends BaseAction {
   constructor(props, errors) {
@@ -93,7 +94,12 @@ export class EmailAction extends BaseAction {
     const errors = [];
 
     if (!json.actionJson.email) {
-      const message = 'json argument must contain an actionJson.email property';
+      const message = i18n.translate('xpack.watcher.models.emailAction.absenceOfActionJsonEmailPropertyBadRequestMessage', {
+        defaultMessage: 'json argument must contain an {actionJsonEmail} property',
+        values: {
+          actionJsonEmail: 'actionJson.email'
+        }
+      });
 
       if (doThrowException) {
         throw badRequest(message);
@@ -106,7 +112,13 @@ export class EmailAction extends BaseAction {
     }
 
     if (!json.actionJson.email.to) {
-      const message = 'json argument must contain an actionJson.email.to property';
+      const message = i18n.translate('xpack.watcher.models.emailAction.absenceOfActionJsonEmailToPropertyBadRequestMessage', {
+        defaultMessage: 'json argument must contain an {actionJsonEmailTo} property',
+        values: {
+          actionJsonEmailTo: 'actionJson.email.to'
+        }
+      });
+
       if (doThrowException) {
         throw badRequest(message);
       }

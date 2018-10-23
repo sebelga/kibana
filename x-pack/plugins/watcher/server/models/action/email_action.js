@@ -105,6 +105,8 @@ export class EmailAction extends BaseAction {
         code: ERROR_CODES.ERR_PROP_MISSING,
         message
       });
+
+      json.actionJson.email = {};
     }
 
     if (!json.actionJson.email.to) {

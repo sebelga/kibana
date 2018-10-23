@@ -48,18 +48,21 @@ describe('action', () => {
 
     describe('type getter method', () => {
 
-      it(`returns a value from ACTION_TYPES when there is a valid model class`, () => {
-        const upstreamJson = {
-          id: 'my-action',
-          actionJson: {
-            logging: {
-              'text': 'foo'
-            }
-          }
-        };
-        const action = Action.fromUpstreamJson(upstreamJson);
+      it(`returns the correct known Action type`, () => {
+        const options = { throwExceptions: { Action: false } };
 
-        expect(action.type).to.be(ACTION_TYPES.LOGGING);
+        const upstreamLoggingJson = { id: 'action1', actionJson: { logging: {} } };
+        const loggingAction = Action.fromUpstreamJson(upstreamLoggingJson, options);
+
+        const upstreamEmailJson = { id: 'action2', actionJson: { email: {} } };
+        const emailAction = Action.fromUpstreamJson(upstreamEmailJson, options);
+
+        const upstreamSlackJson = { id: 'action3', actionJson: { slack: {} } };
+        const slackAction = Action.fromUpstreamJson(upstreamSlackJson, options);
+
+        expect(loggingAction.type).to.be(ACTION_TYPES.LOGGING);
+        expect(emailAction.type).to.be(ACTION_TYPES.EMAIL);
+        expect(slackAction.type).to.be(ACTION_TYPES.SLACK);
       });
 
       it(`returns ACTION_TYPES.UNKNOWN when there is no valid model class`, () => {

@@ -76,7 +76,10 @@ export class LoggingAction extends BaseAction {
           }
         }),
       });
+
+      json.actionJson.logging = {};
     }
+
     if (!json.actionJson.logging.text) {
       errors.push({
         code: ERROR_CODES.ERR_PROP_MISSING,

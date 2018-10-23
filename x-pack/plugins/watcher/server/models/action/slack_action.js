@@ -84,6 +84,8 @@ export class SlackAction extends BaseAction {
           }
         })
       });
+
+      json.actionJson.slack = {};
     }
 
     if (!json.actionJson.slack.message) {
@@ -96,6 +98,8 @@ export class SlackAction extends BaseAction {
           }
         }),
       });
+
+      json.actionJson.slack.message = {};
     }
 
     if (!json.actionJson.slack.message.to) {

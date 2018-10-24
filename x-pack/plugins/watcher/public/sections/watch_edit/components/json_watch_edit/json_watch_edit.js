@@ -101,14 +101,16 @@ app.directive('jsonWatchEdit', function ($injector, i18n) {
       }
 
       onWatchSave = () => {
+        this.createActionsForWatch(this.watch);
+
         if (!this.watch.isNew) {
-          return this.saveWatch();
+          return this.validateWatch();
         }
 
         return this.isExistingWatch()
           .then(existingWatch => {
             if (!existingWatch) {
-              return this.saveWatch();
+              return this.validateWatch();
             }
 
             const confirmModalOptions = {
@@ -153,9 +155,24 @@ app.directive('jsonWatchEdit', function ($injector, i18n) {
           });
       }
 
-      saveWatch = () => {
-        this.createActionsForWatch(this.watch);
+      validateWatch = () => {
+        const { warning } = this.watch.validate();
 
+        if (!warning) {
+          return this.saveWatch();
+        }
+
+        const confirmModalOptions = {
+          onConfirm: this.saveWatch,
+          confirmButtonText: i18n('xpack.watcher.sections.watchEdit.json.watchErrorsWarning.confirmSaveWatch', {
+            defaultMessage: 'Yes',
+          }),
+        };
+
+        return confirmModal(warning.message, confirmModalOptions);
+      }
+
+      saveWatch = () => {
         return watchService.saveWatch(this.watch)
           .then(() => {
             this.watch.isNew = false; // without this, the message displays 'New Watch'

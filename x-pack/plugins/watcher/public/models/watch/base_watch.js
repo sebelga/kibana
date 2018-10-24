@@ -136,6 +136,49 @@ export class BaseWatch {
     return isEqual(cleanWatch, cleanOtherWatch);
   }
 
+  /**
+   * Client validation of the Watch.
+   * Currently we are *only* validating the Watch "Actions"
+   */
+  validate() {
+
+    // Get the errors from each watch action
+    const actionsErrors = this.actions.reduce((actionsErrors, action) => {
+      if (action.validate) {
+        const { errors } = action.validate();
+        if (!errors) {
+          return actionsErrors;
+        }
+        return [...actionsErrors, ...errors];
+      }
+      return actionsErrors;
+    }, []);
+
+    if (!actionsErrors.length) {
+      return { warning: null };
+    }
+
+    // Concatenate their message
+    const errorActionsFragment = actionsErrors.reduce((message, error) => (
+      !!message
+        ? `${message}, ${error.message}`
+        : error.message
+    ), '');
+
+    // We are not doing any *blocking* validation in the client,
+    // so for now we return the errors as a warning
+    return {
+      warning: {
+        message: i18n.translate('xpack.watcher.models.baseWatch.invalidWatchWarningMessageText', {
+          defaultMessage: 'Warning: {errorActionsFragment} Are you sure you want to save the watch in its current state?',
+          values: {
+            errorActionsFragment,
+          }
+        })
+      }
+    };
+  }
+
   static typeName = i18n.translate('xpack.watcher.models.baseWatch.typeName', {
     defaultMessage: 'Watch',
   });

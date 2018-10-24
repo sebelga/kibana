@@ -4,9 +4,18 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import expect from 'expect.js';
-import { Action } from '../action';
-import { ACTION_TYPES } from '../../../../common/constants';
+import { Action } from './action';
+import { LoggingAction } from './logging_action';
+import { ACTION_TYPES } from '../../../common/constants';
+
+jest.mock('./logging_action', () => ({
+  LoggingAction: {
+    fromUpstreamJson: jest.fn(({ id }) => ({
+      errors: null,
+      action: { id, type: 'logging' },
+    })),
+  }
+}));
 
 describe('action', () => {
 
@@ -28,20 +37,35 @@ describe('action', () => {
 
       it(`throws an error if no 'id' property in json`, () => {
         delete upstreamJson.id;
-        expect(Action.fromUpstreamJson).withArgs(upstreamJson)
-          .to.throwError(/must contain an id property/i);
+        expect(() => {
+          Action.fromUpstreamJson(upstreamJson);
+        }).toThrowError(/must contain an id property/i);
       });
 
       it(`throws an error if no 'actionJson' property in json`, () => {
         delete upstreamJson.actionJson;
-        expect(Action.fromUpstreamJson).withArgs(upstreamJson)
-          .to.throwError(/must contain an actionJson property/i);
+        expect(() => {
+          Action.fromUpstreamJson(upstreamJson);
+        }).toThrowError(/must contain an actionJson property/i);
+      });
+
+      it(`throws an error if an Action is invalid`, () => {
+        const message = 'Missing prop in Logging Action!';
+
+        LoggingAction.fromUpstreamJson.mockReturnValueOnce({
+          errors: [{ message }],
+          action: {},
+        });
+
+        expect(() => {
+          Action.fromUpstreamJson(upstreamJson);
+        }).toThrowError(message);
       });
 
       it('returns correct Action instance', () => {
         const action = Action.fromUpstreamJson(upstreamJson);
 
-        expect(action.id).to.be(upstreamJson.id);
+        expect(action.id).toBe(upstreamJson.id);
       });
 
     });
@@ -60,9 +84,9 @@ describe('action', () => {
         const upstreamSlackJson = { id: 'action3', actionJson: { slack: {} } };
         const slackAction = Action.fromUpstreamJson(upstreamSlackJson, options);
 
-        expect(loggingAction.type).to.be(ACTION_TYPES.LOGGING);
-        expect(emailAction.type).to.be(ACTION_TYPES.EMAIL);
-        expect(slackAction.type).to.be(ACTION_TYPES.SLACK);
+        expect(loggingAction.type).toBe(ACTION_TYPES.LOGGING);
+        expect(emailAction.type).toBe(ACTION_TYPES.EMAIL);
+        expect(slackAction.type).toBe(ACTION_TYPES.SLACK);
       });
 
       it(`returns ACTION_TYPES.UNKNOWN when there is no valid model class`, () => {
@@ -76,7 +100,7 @@ describe('action', () => {
         };
         const action = Action.fromUpstreamJson(upstreamJson);
 
-        expect(action.type).to.be(ACTION_TYPES.UNKNOWN);
+        expect(action.type).toBe(ACTION_TYPES.UNKNOWN);
       });
 
     });
@@ -88,20 +112,21 @@ describe('action', () => {
         upstreamJson = {
           id: 'my-action',
           actionJson: {
-            "logging": {
-              "text": "foo"
+            "email": {
+              "to": "elastic@elastic.co"
             }
           }
         };
       });
 
       it('returns correct JSON for client', () => {
+
         const action = Action.fromUpstreamJson(upstreamJson);
 
         const json = action.downstreamJson;
 
-        expect(json.id).to.be(action.id);
-        expect(json.type).to.be(action.type);
+        expect(json.id).toBe(action.id);
+        expect(json.type).toBe(action.type);
       });
 
     });

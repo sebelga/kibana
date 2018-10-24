@@ -27,6 +27,17 @@ export class Action {
 
   // From Elasticsearch
   static fromUpstreamJson(json, options = { throwExceptions: {} }) {
+    if (!json.id) {
+      throw badRequest(
+        i18n.translate('xpack.watcher.models.actionStatus.absenceOfIdPropertyBadRequestMessage', {
+          defaultMessage: 'json argument must contain an {id} property',
+          values: {
+            id: 'id'
+          }
+        }),
+      );
+    }
+
     if (!json.actionJson) {
       throw badRequest(
         i18n.translate('xpack.watcher.models.action.absenceOfActionJsonPropertyBadRequestMessage', {

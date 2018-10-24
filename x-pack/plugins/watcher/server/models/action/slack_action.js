@@ -32,12 +32,15 @@ export class SlackAction extends BaseAction {
   static fromDownstreamJson(json) {
     const props = super.getPropsFromDownstreamJson(json);
 
+    const { errors } = this.validateJson(json);
+
     Object.assign(props, {
       to: json.to,
       text: json.text
     });
 
-    return new SlackAction(props);
+    const action = new SlackAction(props, errors);
+    return { action, errors };
   }
 
   // To Elasticsearch
@@ -59,7 +62,7 @@ export class SlackAction extends BaseAction {
   // From Elasticsearch
   static fromUpstreamJson(json) {
     const props = super.getPropsFromUpstreamJson(json);
-    const { errors } = this.validateJson(json);
+    const { errors } = this.validateJson(json.actionJson);
 
     Object.assign(props, {
       to: json.actionJson.slack.message.to,
@@ -74,7 +77,7 @@ export class SlackAction extends BaseAction {
   static validateJson(json) {
     const errors = [];
 
-    if (!json.actionJson.slack) {
+    if (!json.slack) {
       errors.push({
         code: ERROR_CODES.ERR_PROP_MISSING,
         message: i18n.translate('xpack.watcher.models.slackAction.absenceOfActionJsonSlackPropertyBadRequestMessage', {
@@ -85,10 +88,10 @@ export class SlackAction extends BaseAction {
         })
       });
 
-      json.actionJson.slack = {};
+      json.slack = {};
     }
 
-    if (!json.actionJson.slack.message) {
+    if (!json.slack.message) {
       errors.push({
         code: ERROR_CODES.ERR_PROP_MISSING,
         message: i18n.translate('xpack.watcher.models.slackAction.absenceOfActionJsonSlackMessagePropertyBadRequestMessage', {
@@ -99,19 +102,7 @@ export class SlackAction extends BaseAction {
         }),
       });
 
-      json.actionJson.slack.message = {};
-    }
-
-    if (!json.actionJson.slack.message.to) {
-      errors.push({
-        code: ERROR_CODES.ERR_PROP_MISSING,
-        message: i18n.translate('xpack.watcher.models.slackAction.absenceOfActionJsonSlackMessageToPropertyBadRequestMessage', {
-          defaultMessage: 'json argument must contain an {actionJsonSlackMessageTo} property',
-          values: {
-            actionJsonSlackMessageTo: 'actionJson.slack.message.to'
-          }
-        }),
-      });
+      json.slack.message = {};
     }
 
     return { errors: errors.length ? errors : null };

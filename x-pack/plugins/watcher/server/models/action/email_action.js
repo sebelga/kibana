@@ -33,6 +33,7 @@ export class EmailAction extends BaseAction {
   // From Kibana
   static fromDownstreamJson(json) {
     const props = super.getPropsFromDownstreamJson(json);
+    const { errors } = this.validateJson(json);
 
     Object.assign(props, {
       to: json.to,
@@ -40,7 +41,8 @@ export class EmailAction extends BaseAction {
       body: json.body,
     });
 
-    return new EmailAction(props);
+    const action = new EmailAction(props, errors);
+    return { action, errors };
   }
 
   // To Elasticsearch
@@ -69,7 +71,7 @@ export class EmailAction extends BaseAction {
   // From Elasticsearch
   static fromUpstreamJson(json) {
     const props = super.getPropsFromUpstreamJson(json);
-    const { errors } = this.validateJson(json);
+    const { errors } = this.validateJson(json.actionJson);
 
     const optionalFields = {};
     if (json.actionJson.email.subject) {
@@ -93,7 +95,7 @@ export class EmailAction extends BaseAction {
   static validateJson(json) {
     const errors = [];
 
-    if (!json.actionJson.email) {
+    if (!json.email) {
       const message = i18n.translate('xpack.watcher.models.emailAction.absenceOfActionJsonEmailPropertyBadRequestMessage', {
         defaultMessage: 'json argument must contain an {actionJsonEmail} property',
         values: {
@@ -106,10 +108,10 @@ export class EmailAction extends BaseAction {
         message
       });
 
-      json.actionJson.email = {};
+      json.email = {};
     }
 
-    if (!json.actionJson.email.to) {
+    if (!json.email.to) {
       const message = i18n.translate('xpack.watcher.models.emailAction.absenceOfActionJsonEmailToPropertyBadRequestMessage', {
         defaultMessage: 'json argument must contain an {actionJsonEmailTo} property',
         values: {

@@ -78,6 +78,10 @@ export class BaseWatch {
     remove(this.actions, action);
   }
 
+  resetActions = () => {
+    this.actions = [];
+  };
+
   get displayName() {
     if (this.isNew) {
       return i18n.translate('xpack.watcher.models.baseWatch.displayName', {

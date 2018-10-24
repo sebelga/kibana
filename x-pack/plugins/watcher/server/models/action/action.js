@@ -45,22 +45,33 @@ export class Action {
     const doThrowException = options.throwExceptions.Action !== false;
 
     if (errors && doThrowException) {
-      const allMessages = errors.reduce((message, error) => {
-        if (message) {
-          return `${message}, ${error.message}`;
-        }
-        return error.message;
-      }, '');
-      throw badRequest(allMessages);
+      this.throwErrors(errors);
     }
 
     return action;
   }
 
   // From Kibana
-  static fromDownstreamJson(json) {
+  static fromDownstreamJson(json, options = { throwExceptions: {} }) {
     const ActionType = ActionTypes[json.type] || UnknownAction;
 
-    return ActionType.fromDownstreamJson(json);
+    const { action, errors } = ActionType.fromDownstreamJson(json);
+    const doThrowException = options.throwExceptions.Action !== false;
+
+    if (errors && doThrowException) {
+      this.throwErrors(errors);
+    }
+
+    return action;
+  }
+
+  static throwErrors(errors) {
+    const allMessages = errors.reduce((message, error) => {
+      if (message) {
+        return `${message}, ${error.message}`;
+      }
+      return error.message;
+    }, '');
+    throw badRequest(allMessages);
   }
 }

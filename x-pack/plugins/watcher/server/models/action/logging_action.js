@@ -29,12 +29,14 @@ export class LoggingAction extends BaseAction {
   // From Kibana
   static fromDownstreamJson(json) {
     const props = super.getPropsFromDownstreamJson(json);
+    const { errors } = this.validateJson(json);
 
     Object.assign(props, {
       text: json.text
     });
 
-    return new LoggingAction(props);
+    const action = new LoggingAction(props, errors);
+    return { action, errors };
   }
 
   // To Elasticsearch
@@ -53,7 +55,7 @@ export class LoggingAction extends BaseAction {
   // From Elasticsearch
   static fromUpstreamJson(json) {
     const props = super.getPropsFromUpstreamJson(json);
-    const { errors } = this.validateJson(json);
+    const { errors } = this.validateJson(json.actionJson);
 
     Object.assign(props, {
       text: json.actionJson.logging.text
@@ -66,7 +68,7 @@ export class LoggingAction extends BaseAction {
   static validateJson(json) {
     const errors = [];
 
-    if (!json.actionJson.logging) {
+    if (!json.logging) {
       errors.push({
         code: ERROR_CODES.ERR_PROP_MISSING,
         message: i18n.translate('xpack.watcher.models.loggingAction.absenceOfActionJsonLoggingPropertyBadRequestMessage', {
@@ -77,10 +79,10 @@ export class LoggingAction extends BaseAction {
         }),
       });
 
-      json.actionJson.logging = {};
+      json.logging = {};
     }
 
-    if (!json.actionJson.logging.text) {
+    if (!json.logging.text) {
       errors.push({
         code: ERROR_CODES.ERR_PROP_MISSING,
         message: i18n.translate('xpack.watcher.models.loggingAction.absenceOfActionJsonLoggingTextPropertyBadRequestMessage', {

@@ -19,10 +19,18 @@ export class SlackAction extends BaseAction {
 
   get upstreamJson() {
     const result = super.upstreamJson;
-
+    const message = this.text || this.to.length
+      ? {
+        text: this.text,
+        to: this.to.length ? this.to : undefined
+      }
+      : undefined;
     Object.assign(result, {
       to: this.to,
-      text: this.text
+      text: this.text,
+      slack: {
+        message
+      }
     });
 
     return result;

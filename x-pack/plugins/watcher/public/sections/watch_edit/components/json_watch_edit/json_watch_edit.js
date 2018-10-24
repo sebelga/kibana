@@ -18,6 +18,7 @@ import '../watch_edit_execute_detail';
 import '../watch_edit_actions_execute_summary';
 import '../watch_edit_watch_execute_summary';
 import 'plugins/watcher/services/license';
+import { ACTION_TYPES } from '../../../../../common/constants';
 
 const app = uiModules.get('xpack/watcher');
 
@@ -153,6 +154,8 @@ app.directive('jsonWatchEdit', function ($injector, i18n) {
       }
 
       saveWatch = () => {
+        this.createActionsForWatch(this.watch);
+
         return watchService.saveWatch(this.watch)
           .then(() => {
             this.watch.isNew = false; // without this, the message displays 'New Watch'
@@ -210,6 +213,60 @@ app.directive('jsonWatchEdit', function ($injector, i18n) {
       onClose = () => {
         // dirtyPrompt.deregister();
         kbnUrl.change('/management/elasticsearch/watcher/watches', {});
+      }
+
+      /**
+       * Actions instances are not automatically added to the Watch _actions_ Array
+       * when we add them in the Json editor.
+       * This method takes takes care of it.
+       *
+       * @param watchModel Watch instance
+       * @return Watch instance
+       */
+      createActionsForWatch(watchInstance) {
+        watchInstance.resetActions();
+
+        let action;
+        let type;
+        let actionProps;
+
+        Object.keys(watchInstance.watch.actions).forEach((k) => {
+          action = watchInstance.watch.actions[k];
+          type = this.getTypeFromAction(action);
+          actionProps = this.getPropsFromAction(type, action);
+
+          watchInstance.createAction(type, actionProps);
+        });
+
+        return watchInstance;
+      }
+
+      /**
+       * Get the type from an action where a key defines its type.
+       * eg: { email: { ... } } | { slack: { ... } }
+       *
+       * @param action A raw action object
+       * @return {string} The action type
+       */
+      getTypeFromAction(action) {
+        const actionKeys = Object.keys(action);
+        let type;
+
+        Object.keys(ACTION_TYPES).forEach((k) => {
+          if (actionKeys.includes(ACTION_TYPES[k])) {
+            type = ACTION_TYPES[k];
+          }
+        });
+
+        return type ? type : ACTION_TYPES.UNKNOWN;
+      }
+
+      getPropsFromAction(type, action) {
+        if (type === ACTION_TYPES.SLACK) {
+          // Slack action has its props inside the "message" object
+          return action[type].message;
+        }
+        return action[type];
       }
     }
   };

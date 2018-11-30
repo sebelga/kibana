@@ -123,7 +123,7 @@ class AutoFollowPatternAddUI extends PureComponent {
           defaultMessage="Cross Cluster Replication"
         />
       ),
-      ...routing.getRouterLinkProps(),
+      ...routing.getRouterLinkProps('/'),
     }, {
       text: (
         <FormattedMessage

@@ -14,6 +14,8 @@ import {
   REFRESH_RATE_INDEX_LIST
 } from '../../../../constants';
 
+import { EuiTabs, EuiTab } from '@elastic/eui';
+
 export class IndexList extends React.PureComponent {
   componentWillMount() {
     this.props.loadIndices();
@@ -27,9 +29,32 @@ export class IndexList extends React.PureComponent {
     clearInterval(this.interval);
   }
 
+  renderTabs() {
+    const { history } = this.props;
+
+    return (
+      <EuiTabs>
+        <EuiTab
+          isSelected={true}
+          onClick={() => undefined}
+          key={0}
+        >
+        Index list
+        </EuiTab>
+        <EuiTab
+          onClick={() => history.push('/management/elasticsearch/cross_cluster_replication')}
+          key={1}
+        >
+        Cross Cluster Repication
+        </EuiTab>
+      </EuiTabs>
+    );
+  }
+
   render() {
     return (
       <div className="indTable__horizontalScroll im-snapshotTestSubject">
+        {this.renderTabs()}
         <IndexTable />
         <DetailPanel />
       </div>

@@ -11,7 +11,7 @@ import { BASE_PATH } from '../common/constants';
 const esSection = management.getSection('elasticsearch');
 
 esSection.register('ccr', {
-  visible: true,
+  visible: false,
   display: i18n.translate('xpack.ccr.appTitle', { defaultMessage: 'Cross Cluster Replication' }),
   order: 3,
   url: `#${BASE_PATH}`

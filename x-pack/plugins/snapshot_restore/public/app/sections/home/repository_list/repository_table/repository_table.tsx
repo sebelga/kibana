@@ -53,7 +53,11 @@ const RepositoryTableUi: React.FunctionComponent<Props> = ({
       truncateText: true,
       sortable: true,
       render: (name: Repository['name'], repository: Repository) => {
-        return <EuiLink onClick={() => openRepositoryDetails(name)}>{name}</EuiLink>;
+        return (
+          <EuiLink onClick={() => openRepositoryDetails(name)} data-test-subj="repositoryLink">
+            {name}
+          </EuiLink>
+        );
       },
     },
     {
@@ -253,11 +257,12 @@ const RepositoryTableUi: React.FunctionComponent<Props> = ({
       pagination={pagination}
       isSelectable={true}
       rowProps={() => ({
-        'data-test-subj': 'srRepositoryListTableRow',
+        'data-test-subj': 'row',
       })}
       cellProps={(item: any, column: any) => ({
-        'data-test-subj': `srRepositoryListTableCell-${column.field}`,
+        'data-test-subj': `cell`,
       })}
+      data-test-subj="repositoryTable"
     />
   );
 };

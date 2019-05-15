@@ -262,7 +262,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
   }
 
   return (
-    <Fragment>
+    <section data-test-subj="snapshotList">
       {repositoryName && snapshotId ? (
         <SnapshotDetails
           repositoryName={repositoryName}
@@ -271,6 +271,6 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
         />
       ) : null}
       {content}
-    </Fragment>
+    </section>
   );
 };

@@ -132,7 +132,7 @@ export const RepositoryList: React.FunctionComponent<RouteComponentProps<MatchPa
   }
 
   return (
-    <Fragment>
+    <section data-test-subj="repositoryList">
       {repositoryName ? (
         <RepositoryDetails
           repositoryName={repositoryName}
@@ -141,6 +141,6 @@ export const RepositoryList: React.FunctionComponent<RouteComponentProps<MatchPa
         />
       ) : null}
       {content}
-    </Fragment>
+    </section>
   );
 };

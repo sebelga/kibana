@@ -34,7 +34,7 @@ export const sendRequest = async ({
     };
   } catch (e) {
     return {
-      error: e,
+      error: e.response ? e.response : e,
     };
   }
 };

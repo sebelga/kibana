@@ -97,7 +97,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
       <EuiEmptyPrompt
         iconType="managementApp"
         title={
-          <h1>
+          <h1 data-test-subj="title">
             <FormattedMessage
               id="xpack.snapshotRestore.snapshotList.emptyPrompt.errorRepositoriesTitle"
               defaultMessage="Some repositories contain errors"
@@ -144,7 +144,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
       <EuiEmptyPrompt
         iconType="managementApp"
         title={
-          <h1>
+          <h1 data-test-subj="title">
             <FormattedMessage
               id="xpack.snapshotRestore.snapshotList.emptyPrompt.noRepositoriesTitle"
               defaultMessage="You don't have any snapshots or repositories yet"
@@ -166,7 +166,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
                 })}
                 fill
                 iconType="plusInCircle"
-                data-test-subj="srSnapshotsEmptyPromptAddRepositoryButton"
+                data-test-subj="registerRepositoryButton"
               >
                 <FormattedMessage
                   id="xpack.snapshotRestore.snapshotList.emptyPrompt.noRepositoriesAddButtonLabel"
@@ -176,6 +176,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
             </p>
           </Fragment>
         }
+        data-test-subj="emptyPrompt"
       />
     );
   } else if (snapshots.length === 0) {
@@ -183,7 +184,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
       <EuiEmptyPrompt
         iconType="managementApp"
         title={
-          <h1>
+          <h1 data-test-subj="title">
             <FormattedMessage
               id="xpack.snapshotRestore.snapshotList.emptyPrompt.noSnapshotsTitle"
               defaultMessage="You don't have any snapshots yet"
@@ -202,7 +203,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
               <EuiLink
                 href={documentationLinksService.getSnapshotDocUrl()}
                 target="_blank"
-                data-test-subj="srSnapshotsEmptyPromptDocLink"
+                data-test-subj="documentationLink"
               >
                 <FormattedMessage
                   id="xpack.snapshotRestore.emptyPrompt.noSnapshotsDocLinkText"
@@ -213,6 +214,7 @@ export const SnapshotList: React.FunctionComponent<RouteComponentProps<MatchPara
             </p>
           </Fragment>
         }
+        data-test-subj="emptyPrompt"
       />
     );
   } else {

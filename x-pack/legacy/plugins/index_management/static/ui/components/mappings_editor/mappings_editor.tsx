@@ -20,6 +20,7 @@ import { PropertiesManager } from './components';
 import { propertiesArrayToObject, propertiesObjectToArray } from './helpers';
 import { dataTypesDefinition, getTypeFromSubType } from './config';
 import { DYNAMIC_SETTING_OPTIONS } from './constants';
+import { childrenToArray, ReadOnlyFields } from './read_only_fields';
 
 interface Props {
   setGetDataHandler: (handler: () => Promise<{ isValid: boolean; data: Mappings }>) => void;
@@ -82,6 +83,7 @@ export const MappingsEditor = ({
     setGetDataHandler(form.onSubmit);
   }, [form]);
 
+      console.log('defaultValue', defaultValue)
   return (
     <EuiForm className="mappings-editor">
       {/* Global Mappings configuration */}
@@ -99,6 +101,7 @@ export const MappingsEditor = ({
         <UseField path="dynamic_date_formats" form={form} component={Field} />
       </FormRow>
 
+      <ReadOnlyFields fields={childrenToArray(defaultValue.properties)} />
       {/* Document fields */}
       <EuiTitle size="s">
         <h4>Document fields</h4>

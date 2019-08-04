@@ -56,16 +56,17 @@
     display:block;
     height:0;
     border-top:1px dotted #aaa;
-    margin-top:-1px;
     position:absolute;
-    top: 64px;
-    left:0;
+    top: 24px;
+    left: 1px;
+    width: 12px;
   }
 
   .tree li:last-child:before {
     background:white;
     height:auto;
-    top: 64px;
+    top: 24px;
     bottom:0;
+    left: 0;
   }
 }

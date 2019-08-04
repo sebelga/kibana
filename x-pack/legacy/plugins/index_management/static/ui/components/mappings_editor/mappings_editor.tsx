@@ -87,7 +87,7 @@ const deSerializer = (data: Record<string, unknown>): Record<string, unknown> =>
 export const MappingsEditor = ({
   setGetDataHandler,
   areErrorsVisible = true,
-  defaultValue,
+  defaultValue = {},
 }: Props) => {
   const { form } = useForm({ schema, serializer, deSerializer, defaultValue });
 
@@ -117,7 +117,7 @@ export const MappingsEditor = ({
         <h4>Document fields</h4>
       </EuiTitle>
       <EuiSpacer size="m" />
-      <PropertiesManager form={form} />
+      <PropertiesManager form={form} properties={defaultValue.properties} />
     </EuiForm>
   );
 };

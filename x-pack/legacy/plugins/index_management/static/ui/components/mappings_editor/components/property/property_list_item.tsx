@@ -8,34 +8,37 @@ import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
 import { Tree, TreeItem } from '../tree';
+import { usePropertiesCtx } from '../../mappings_editor';
 
 interface Props {
-  // parentPath: string;
-  // form: Form;
   name: string;
+  path: string;
+  // form: Form;
   property: Record<string, any>;
   onRemove?: () => void;
   fieldPathPrefix?: string;
   // isEditMode?: boolean;
 }
 
-export const PropertyListItem = ({ name, property }: Props) => {
+export const PropertyListItem = ({ name, property, path }: Props) => {
   const hasChildren = Boolean(property.properties);
+  const { selectedProp, setSelectedProp } = usePropertiesCtx();
 
   const renderActionButtons = () => (
     <EuiFlexGroup gutterSize="xs">
       <EuiFlexItem>
         <EuiButtonIcon
           color="primary"
-          onClick={() => window.alert('Button clicked')}
+          onClick={() => setSelectedProp(name)}
           iconType="pencil"
           aria-label="Edit"
+          disabled={selectedProp !== null}
         />
       </EuiFlexItem>
       <EuiFlexItem>
         <EuiButtonIcon
           color="danger"
-          onClick={() => window.alert('Button clicked')}
+          onClick={() => window.alert('Ok')}
           iconType="trash"
           aria-label="Delete"
         />
@@ -49,9 +52,10 @@ export const PropertyListItem = ({ name, property }: Props) => {
       rightHeaderContent={renderActionButtons()}
     >
       {Object.entries(property.properties).map(([childName, childProperty], i) => (
-        <TreeItem key={i}>
+        <TreeItem key={`${path}.properties.${childName}`}>
           <PropertyListItem
             name={childName}
+            path={`${path}.properties.${childName}`}
             property={childProperty as any}
             // parentPath={`${path}.${i}`}
           />

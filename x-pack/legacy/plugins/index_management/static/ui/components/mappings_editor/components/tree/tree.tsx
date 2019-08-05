@@ -9,18 +9,25 @@ import { EuiFlexItem, EuiFlexGroup, EuiSpacer, EuiIcon } from '@elastic/eui';
 
 interface Props {
   children: React.ReactNode;
+  isInitialOpen?: boolean;
   headerContent?: React.ReactNode;
   rightHeaderContent?: React.ReactNode;
 }
 
-export const Tree = ({ children, headerContent, rightHeaderContent }: Props) => {
-  const [showChildren, setShowChildren] = useState<boolean>(!Boolean(headerContent));
+export const Tree = ({
+  children,
+  headerContent,
+  rightHeaderContent,
+  isInitialOpen = false,
+}: Props) => {
+  const hasHeader = Boolean(headerContent);
+  const [showChildren, setShowChildren] = useState<boolean>(isInitialOpen);
 
   const toggleShowChildren = () => setShowChildren(previous => !previous);
 
   return (
     <Fragment>
-      {headerContent && (
+      {hasHeader && (
         <EuiFlexGroup>
           <EuiFlexItem>
             <button
@@ -44,7 +51,7 @@ export const Tree = ({ children, headerContent, rightHeaderContent }: Props) => 
       )}
       {showChildren && (
         <Fragment>
-          <EuiSpacer size="m" />
+          {hasHeader && <EuiSpacer size="m" />}
           <ul className="tree">{children}</ul>
         </Fragment>
       )}

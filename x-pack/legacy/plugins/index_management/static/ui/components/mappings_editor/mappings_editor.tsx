@@ -16,7 +16,7 @@ import {
 } from '../../../../../../../../src/plugins/elasticsearch_ui_shared/static/forms/components';
 
 import { schema } from './form.schema';
-import { PropertiesManager } from './components';
+import { Tree, TreeItem, PropertyListItem } from './components';
 import { propertiesArrayToObject, propertiesObjectToArray } from './helpers';
 import { dataTypesDefinition, getTypeFromSubType } from './config';
 import { DYNAMIC_SETTING_OPTIONS } from './constants';
@@ -117,7 +117,17 @@ export const MappingsEditor = ({
         <h4>Document fields</h4>
       </EuiTitle>
       <EuiSpacer size="m" />
-      <PropertiesManager form={form} properties={defaultValue.properties} />
+      <Tree>
+        {Object.entries(defaultValue.properties).map(([name, property], i) => (
+          <TreeItem key={i}>
+            <PropertyListItem
+              name={name}
+              property={property as any}
+              // parentPath={`${path}.${i}`}
+            />
+          </TreeItem>
+        ))}
+      </Tree>
     </EuiForm>
   );
 };

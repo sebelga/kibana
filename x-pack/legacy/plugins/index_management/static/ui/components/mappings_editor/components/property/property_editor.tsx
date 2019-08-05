@@ -30,7 +30,6 @@ import {
 // } from '../../config';
 // import { hasNestedProperties } from '../../helpers';
 // import { PropertyBasicParameters } from '../property_basic_parameters';
-// import { PropertiesManager } from '../properties_manager';
 // import { getComponentForParameter } from '../parameters';
 // import { getAdvancedSettingsCompForType } from '../advanced_settings';
 

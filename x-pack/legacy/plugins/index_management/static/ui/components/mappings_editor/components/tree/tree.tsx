@@ -4,12 +4,50 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React from 'react';
+import React, { useState, Fragment } from 'react';
+import { EuiFlexItem, EuiFlexGroup, EuiSpacer, EuiIcon } from '@elastic/eui';
 
 interface Props {
   children: React.ReactNode;
+  headerContent?: React.ReactNode;
+  rightHeaderContent?: React.ReactNode;
 }
 
-export const Tree = ({ children }: Props) => {
-  return <ul className="tree">{children}</ul>;
+export const Tree = ({ children, headerContent, rightHeaderContent }: Props) => {
+  const [showChildren, setShowChildren] = useState<boolean>(!Boolean(headerContent));
+
+  const toggleShowChildren = () => setShowChildren(previous => !previous);
+
+  return (
+    <Fragment>
+      {headerContent && (
+        <EuiFlexGroup>
+          <EuiFlexItem>
+            <button
+              onClick={toggleShowChildren}
+              type="button"
+              style={{
+                animation: 'none',
+              }}
+            >
+              <EuiFlexGroup alignItems="center" responsive={false}>
+                <EuiFlexItem grow={false} style={{ marginLeft: '6px', marginRight: '6px' }}>
+                  <EuiIcon type={showChildren ? 'arrowDown' : 'arrowRight'} size="m" />
+                </EuiFlexItem>
+
+                <EuiFlexItem style={{ marginLeft: '6px' }}>{headerContent}</EuiFlexItem>
+              </EuiFlexGroup>
+            </button>
+          </EuiFlexItem>
+          {rightHeaderContent && <EuiFlexItem grow={false}>{rightHeaderContent}</EuiFlexItem>}
+        </EuiFlexGroup>
+      )}
+      {showChildren && (
+        <Fragment>
+          <EuiSpacer size="m" />
+          <ul className="tree">{children}</ul>
+        </Fragment>
+      )}
+    </Fragment>
+  );
 };

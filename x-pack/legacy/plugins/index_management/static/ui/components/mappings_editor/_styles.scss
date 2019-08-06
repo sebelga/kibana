@@ -1,19 +1,22 @@
 .mappings-editor {
-  .euiAccordion__childWrapper {
-    transition: none;
-  }
-
-  .euiAccordion__padding--l {
-    padding-right: 0;
-  }
+  $gutter: 12px;
+  $border-tree: 1px dotted #aaa;
 
   .property-editor {
-    border-bottom: 1px solid #eee;
-    margin: -12px;
-    padding: 12px;
+    background-color: #fafbfd;
+    margin-top: $gutter;
+    margin-bottom: $gutter;
+    margin-left: $gutter * -2 + 1px; // add 1 px to not hide the li border
+    padding: 0 12px 12px;
+    position: relative;
+    padding-bottom: $gutter;
+    z-index: 1;
 
-    &:hover {
-      background-color: #fafbfd;
+    .btn-save {
+      background-color: white;
+      position: absolute;
+      top: $gutter * 0.5;
+      right: $gutter * 0.5;
     }
   }
 
@@ -34,7 +37,7 @@
     top:0;
     bottom:0;
     left:0;
-    border-left:1px dotted #aaa;
+    border-left: $border-tree;
   }
 
   .tree li {
@@ -42,7 +45,7 @@
     padding-left: 1.5em;
     line-height:2em;
     position:relative;
-    margin-bottom: 12px;
+    margin-bottom: $gutter;
 
     &:last-child {
       .property-editor {
@@ -59,13 +62,13 @@
     position:absolute;
     top: 24px;
     left: 1px;
-    width: 12px;
+    width: $gutter;
   }
 
   .tree li:last-child:before {
     background:white;
     height:auto;
-    top: 24px;
+    top: $gutter * 2;
     bottom:0;
     left: 0;
   }

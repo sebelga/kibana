@@ -3,7 +3,6 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React from 'react';
 import { DataType } from './config';
 
 export const hasNestedProperties = (selectedDatatype: DataType) =>
@@ -53,14 +52,3 @@ export const propertiesObjectToArray = (
     }
     return { name, ...property };
   });
-
-export function createCtx<A>() {
-  const ctx = React.createContext<A | undefined>(undefined);
-
-  function useCtx() {
-    const c = React.useContext(ctx);
-    if (!c) throw new Error('useCtx must be inside a Provider with a value');
-    return c;
-  }
-  return [useCtx, ctx.Provider] as [() => A, typeof ctx.Provider];
-}

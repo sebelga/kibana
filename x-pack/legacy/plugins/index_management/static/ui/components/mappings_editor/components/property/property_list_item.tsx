@@ -8,7 +8,7 @@ import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
 import { Tree, TreeItem } from '../tree';
-import { usePropertiesCtx } from '../../mappings_editor';
+import { usePropertiesState, usePropertiesDispatch } from '../properties_contex';
 
 interface Props {
   name: string;
@@ -22,17 +22,18 @@ interface Props {
 
 export const PropertyListItem = ({ name, property, path }: Props) => {
   const hasChildren = Boolean(property.properties);
-  const { selectedProp, setSelectedProp } = usePropertiesCtx();
+  const { selectedPath } = usePropertiesState();
+  const dispatch = usePropertiesDispatch();
 
   const renderActionButtons = () => (
     <EuiFlexGroup gutterSize="xs">
       <EuiFlexItem>
         <EuiButtonIcon
           color="primary"
-          onClick={() => setSelectedProp(name)}
+          onClick={() => dispatch({ type: 'selectPath', value: path })}
           iconType="pencil"
           aria-label="Edit"
-          disabled={selectedProp !== null}
+          disabled={selectedPath !== null}
         />
       </EuiFlexItem>
       <EuiFlexItem>

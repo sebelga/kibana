@@ -4,7 +4,9 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import React, { useReducer, useContext } from 'react';
-import { set } from 'lodash';
+import { get, set } from 'lodash';
+
+import { unset } from '../helpers';
 
 interface State {
   properties: Record<string, any>;
@@ -13,7 +15,8 @@ interface State {
 
 type Action =
   | { type: 'selectPath'; value: string | null }
-  | { type: 'saveProperty'; path: string; value: Record<string, any> };
+  | { type: 'saveProperty'; path: string; value: Record<string, any> }
+  | { type: 'updatePropertyPath'; oldPath: string; newPath: string };
 
 type Dispatch = (action: Action) => void;
 
@@ -21,18 +24,26 @@ const PropertiesStateContext = React.createContext<State | undefined>(undefined)
 const PropertiesDispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
 function propertiesReducer(state: State, action: Action): State {
+  let updatedProperties: Record<string, any>;
+
   switch (action.type) {
     case 'selectPath':
       return { ...state, selectedPath: action.value };
     case 'saveProperty':
-      const updatedProperties: Record<string, any> = set(
-        { ...state.properties },
-        action.path,
-        action.value
-      );
+      updatedProperties = set({ ...state.properties }, action.path, action.value);
       return {
         ...state,
         selectedPath: null,
+        properties: updatedProperties,
+      };
+    case 'updatePropertyPath':
+      const property = get(state.properties, action.oldPath);
+      // Delete the property at the old path
+      unset(state.properties, action.oldPath);
+      // Add it to the new path
+      updatedProperties = set({ ...state.properties }, action.newPath, property);
+      return {
+        ...state,
         properties: updatedProperties,
       };
     default:

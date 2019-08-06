@@ -3,7 +3,7 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
@@ -25,9 +25,22 @@ export const PropertyListItem = ({ name, property, path }: Props) => {
 
   const hasChildren = Boolean(property.properties);
   const isEditMode = selectedPath === path;
+  const [showChildren, setShowChildren] = useState<boolean>(isEditMode);
 
-  const onSubmitProperty = ({ name: _, ...rest }: Record<string, any>) => {
-    dispatch({ type: 'saveProperty', path, value: rest });
+  const onSubmitProperty = ({ name: updatedName, ...rest }: Record<string, any>) => {
+    if (updatedName !== name) {
+      // The name has been updated, we need to
+      // 1. Change the property path to the new path
+      // 2. Replace the old property at the new path
+      const pathToArray = path.split('.');
+      pathToArray[pathToArray.length - 1] = updatedName;
+      const newPath = pathToArray.join('.');
+
+      dispatch({ type: 'updatePropertyPath', oldPath: path, newPath });
+      dispatch({ type: 'saveProperty', path: newPath, value: rest });
+    } else {
+      dispatch({ type: 'saveProperty', path, value: rest });
+    }
   };
 
   const renderActionButtons = () => (
@@ -60,11 +73,13 @@ export const PropertyListItem = ({ name, property, path }: Props) => {
     <Tree
       headerContent={<PropertyView name={name} property={property} />}
       rightHeaderContent={renderActionButtons()}
+      isOpen={isEditMode ? true : showChildren}
+      onToggle={() => setShowChildren(prev => !prev)}
     >
       <Fragment>
         {isEditMode && renderEditForm()}
         {Object.entries(property.properties)
-          // Make sure to present the fields in alphabetical order
+          // Make sure to display the fields in alphabetical order
           .sort(([a], [b]) => (a < b ? -1 : 1))
           .map(([childName, childProperty], i) => (
             <TreeItem key={`${path}.properties.${childName}`}>

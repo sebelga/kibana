@@ -18,7 +18,6 @@ import {
 import {
   useForm,
   UseField,
-  FormConfig,
   FormDataProvider,
   FieldConfig,
 } from '../../../../../../../../../../src/plugins/elasticsearch_ui_shared/static/forms/hook_form_lib';
@@ -27,6 +26,7 @@ import { Field } from '../../../../../../../../../../src/plugins/elasticsearch_u
 import {
   parametersDefinition,
   dataTypesDefinition,
+  getTypeFromSubType,
   ParameterName,
   DataType,
   SubType,
@@ -39,11 +39,6 @@ import { getAdvancedSettingsCompForType } from '../advanced_settings';
 interface Props {
   onSubmit: (property: Record<string, any>) => void;
   defaultValue?: Record<string, any>;
-  // form: Form;
-  // onRemove?: () => void;
-  // fieldPathPrefix?: string;
-  // isDeletable?: boolean;
-  // isEditMode?: boolean;
 }
 
 const fieldConfig = (param: ParameterName): FieldConfig =>
@@ -52,30 +47,58 @@ const fieldConfig = (param: ParameterName): FieldConfig =>
 const defaultValueParam = (param: ParameterName): unknown =>
   typeof fieldConfig(param).defaultValue !== 'undefined' ? fieldConfig(param).defaultValue : '';
 
+const sanitizePropParameters = (parameters: Record<string, any>): Record<string, any> =>
+  Object.entries(parameters).reduce(
+    (acc, [param, value]) => {
+      // IF a prop value is "index_default", we remove it
+      if (value !== 'index_default') {
+        acc[param] = value;
+      }
+      return acc;
+    },
+    {} as any
+  );
+
+const serializer = (property: Record<string, any>) => {
+  // If a subType is present, use it as type for ES
+  if ({}.hasOwnProperty.call(property, 'subType')) {
+    property.type = property.subType;
+    delete property.subType;
+  }
+  return sanitizePropParameters(property);
+};
+
+const deSerializer = (property: Record<string, any>) => {
+  if (!(dataTypesDefinition as any)[property.type]) {
+    const type = getTypeFromSubType(property.type);
+    if (!type) {
+      throw new Error(
+        `Property type "${property.type}" not recognized and no subType was found for it.`
+      );
+    }
+    property.subType = property.type;
+    property.type = type;
+  }
+
+  return property;
+};
+
 export const PropertyEditor = ({ onSubmit, defaultValue }: Props) => {
   const [isAdvancedSettingsVisible, setIsAdvancedSettingsVisible] = useState<boolean>(false);
 
-  const onFormSubmit: FormConfig['onSubmit'] = (formData, isValid) => {
-    if (isValid) {
-      onSubmit(formData);
-    }
-  };
-
-  const { form } = useForm({ defaultValue, onSubmit: onFormSubmit });
+  const { form } = useForm({ defaultValue, serializer, deSerializer });
   const isEditMode = typeof defaultValue !== 'undefined';
 
-  // const renderNestedProperties = (selectedType: DataType, fieldName: string) =>
-  //   hasNestedProperties(selectedType) ? (
-  //     <Fragment>
-  //       <EuiSpacer size="l" />
-  //       <PropertiesManager
-  //         form={form}
-  //         parentType={selectedType}
-  //         path={fieldPathPrefix}
-  //         fieldName={fieldName}
-  //       />
-  //     </Fragment>
-  //   ) : null;
+  const submitForm = async () => {
+    const { isValid, data: formData } = await form.onSubmit();
+    if (isValid) {
+      const data =
+        defaultValue && defaultValue.properties
+          ? { ...formData, properties: defaultValue.properties }
+          : formData;
+      onSubmit(data);
+    }
+  };
 
   const toggleAdvancedSettings = () => {
     setIsAdvancedSettingsVisible(previous => !previous);
@@ -91,11 +114,7 @@ export const PropertyEditor = ({ onSubmit, defaultValue }: Props) => {
       <Fragment>
         <EuiSpacer size="m" />
         <div style={{ backgroundColor: '#F5F7FA', padding: '12px' }}>
-          <AdvancedSettingsComponent
-            // fieldPathPrefix={fieldPathPrefix}
-            form={form}
-            // isEditMode={isEditMode}
-          />
+          <AdvancedSettingsComponent form={form} />
         </div>
       </Fragment>
     );
@@ -204,9 +223,8 @@ export const PropertyEditor = ({ onSubmit, defaultValue }: Props) => {
 
             {renderAdvancedSettings(selectedDatatype)}
 
-            <EuiSpacer size="s" />
-            <EuiButton color="primary" fill onClick={() => form.onSubmit()}>
-              Save property
+            <EuiButton color="primary" size="s" onClick={submitForm} className="btn-save">
+              Save
             </EuiButton>
           </EuiForm>
         );

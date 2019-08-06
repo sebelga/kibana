@@ -9,7 +9,9 @@ import { EuiFlexItem, EuiFlexGroup, EuiSpacer, EuiIcon } from '@elastic/eui';
 
 interface Props {
   children: React.ReactNode;
-  isInitialOpen?: boolean;
+  defaultIsOpen?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
   headerContent?: React.ReactNode;
   rightHeaderContent?: React.ReactNode;
 }
@@ -18,12 +20,17 @@ export const Tree = ({
   children,
   headerContent,
   rightHeaderContent,
-  isInitialOpen = false,
+  defaultIsOpen = false,
+  isOpen,
+  onToggle = () => undefined,
 }: Props) => {
   const hasHeader = Boolean(headerContent);
-  const [showChildren, setShowChildren] = useState<boolean>(isInitialOpen);
-
+  const isControlled = typeof isOpen !== 'undefined';
+  const [showChildren, setShowChildren] = useState<boolean>(defaultIsOpen);
   const toggleShowChildren = () => setShowChildren(previous => !previous);
+
+  const getIsOpen = () => (isControlled ? isOpen : showChildren);
+  const onMainBtnClick = () => (isControlled ? onToggle() : toggleShowChildren());
 
   return (
     <Fragment>
@@ -31,7 +38,7 @@ export const Tree = ({
         <EuiFlexGroup>
           <EuiFlexItem>
             <button
-              onClick={toggleShowChildren}
+              onClick={onMainBtnClick}
               type="button"
               style={{
                 animation: 'none',
@@ -39,7 +46,7 @@ export const Tree = ({
             >
               <EuiFlexGroup alignItems="center" responsive={false}>
                 <EuiFlexItem grow={false} style={{ marginLeft: '6px', marginRight: '6px' }}>
-                  <EuiIcon type={showChildren ? 'arrowDown' : 'arrowRight'} size="m" />
+                  <EuiIcon type={getIsOpen() ? 'arrowDown' : 'arrowRight'} size="m" />
                 </EuiFlexItem>
 
                 <EuiFlexItem style={{ marginLeft: '6px' }}>{headerContent}</EuiFlexItem>
@@ -49,7 +56,7 @@ export const Tree = ({
           {rightHeaderContent && <EuiFlexItem grow={false}>{rightHeaderContent}</EuiFlexItem>}
         </EuiFlexGroup>
       )}
-      {showChildren && (
+      {getIsOpen() && (
         <Fragment>
           {hasHeader && <EuiSpacer size="m" />}
           <ul className="tree">{children}</ul>

@@ -35,12 +35,12 @@ export const DocumentFields = ({ defaultProperties = {}, onUpdate }: Props) => {
             onUpdate({ properties, isValid: selectedPath === null });
 
             return (
-              <Tree isInitialOpen>
+              <Tree defaultIsOpen>
                 {Object.entries(properties)
-                  // Make sure to present the fields in alphabetical order
+                  // Make sure to display the fields in alphabetical order
                   .sort(([a], [b]) => (a < b ? -1 : 1))
                   .map(([name, property], i) => (
-                    <TreeItem key={`properties.${name}`}>
+                    <TreeItem key={name}>
                       <PropertyListItem name={name} path={name} property={property as any} />
                     </TreeItem>
                   ))}

@@ -5,7 +5,6 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-// import { get, set } from 'lodash';
 
 import { ConfigurationForm, DocumentFields, DocumentFieldsState } from './components';
 

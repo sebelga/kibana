@@ -7,7 +7,7 @@
 import React, { useEffect, useRef } from 'react';
 // import { get, set } from 'lodash';
 
-import { ConfigurationForm, DocumentFields } from './components';
+import { ConfigurationForm, DocumentFields, DocumentFieldsState } from './components';
 
 interface Props {
   setGetDataHandler: (
@@ -32,20 +32,23 @@ export const MappingsEditor = ({
       data: {},
     })
   );
-  const properties = useRef<Record<string, any>>({});
+  const documentFields = useRef<DocumentFieldsState>({ isValid: true, properties: {} });
 
   useEffect(() => {
     setGetDataHandler(async () => {
       const { isValid, data } = await getConfigurationFormData.current();
-      return { isValid, data: { ...data, properties: properties.current } };
+      return {
+        isValid: isValid && documentFields.current.isValid,
+        data: { ...data, properties: documentFields.current.properties },
+      };
     });
   }, []);
 
   const setGetConfigurationFormDataHandler = (handler: GetFormDataHandler) =>
     (getConfigurationFormData.current = handler);
 
-  const onPropertiesUpdate = (props: Record<string, any>) => {
-    properties.current = props;
+  const onPropertiesUpdate = (docFields: DocumentFieldsState) => {
+    documentFields.current = docFields;
   };
 
   return (

@@ -10,8 +10,13 @@ import { Tree, TreeItem } from './tree';
 import { PropertyListItem } from './property';
 import { PropertiesProvider, PropertiesConsumer } from './properties_contex';
 
+export interface DocumentFieldsState {
+  isValid: boolean;
+  properties: Record<string, any>;
+}
+
 interface Props {
-  onUpdate: (properties: Record<string, any>) => void;
+  onUpdate: (state: DocumentFieldsState) => void;
   defaultProperties?: Record<string, any>;
 }
 
@@ -26,20 +31,19 @@ export const DocumentFields = ({ defaultProperties = {}, onUpdate }: Props) => {
       <PropertiesProvider defaultProperties={defaultProperties}>
         <PropertiesConsumer>
           {state => {
-            const { properties } = state!;
-            onUpdate(properties);
+            const { properties, selectedPath } = state!;
+            onUpdate({ properties, isValid: selectedPath === null });
 
             return (
               <Tree isInitialOpen>
-                {Object.entries(properties).map(([name, property], i) => (
-                  <TreeItem key={`properties.${name}`}>
-                    <PropertyListItem
-                      name={name}
-                      path={`properties.${name}`}
-                      property={property as any}
-                    />
-                  </TreeItem>
-                ))}
+                {Object.entries(properties)
+                  // Make sure to present the fields in alphabetical order
+                  .sort(([a], [b]) => (a < b ? -1 : 1))
+                  .map(([name, property], i) => (
+                    <TreeItem key={`properties.${name}`}>
+                      <PropertyListItem name={name} path={name} property={property as any} />
+                    </TreeItem>
+                  ))}
               </Tree>
             );
           }}

@@ -4,6 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import React, { useReducer, useContext } from 'react';
+import { set } from 'lodash';
 
 interface State {
   properties: Record<string, any>;
@@ -12,19 +13,28 @@ interface State {
 
 type Action =
   | { type: 'selectPath'; value: string | null }
-  | { type: 'saveProperty'; name: string; value: Record<string, any> };
+  | { type: 'saveProperty'; path: string; value: Record<string, any> };
 
 type Dispatch = (action: Action) => void;
 
 const PropertiesStateContext = React.createContext<State | undefined>(undefined);
 const PropertiesDispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
-function propertiesReducer(state: State, action: Action) {
+function propertiesReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'selectPath':
       return { ...state, selectedPath: action.value };
     case 'saveProperty':
-      return { ...state, properties: { ...state.properties, [action.name]: action.value } };
+      const updatedProperties: Record<string, any> = set(
+        { ...state.properties },
+        action.path,
+        action.value
+      );
+      return {
+        ...state,
+        selectedPath: null,
+        properties: updatedProperties,
+      };
     default:
       throw new Error(`Unhandled action type: ${action!.type}`);
   }

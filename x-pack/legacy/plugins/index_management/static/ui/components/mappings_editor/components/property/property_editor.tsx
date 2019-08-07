@@ -31,7 +31,6 @@ import {
   DataType,
   SubType,
 } from '../../config';
-// import { hasNestedProperties } from '../../helpers';
 import { PropertyBasicParameters } from '../property_basic_parameters';
 import { getComponentForParameter } from '../parameters';
 import { getAdvancedSettingsCompForType } from '../advanced_settings';
@@ -39,6 +38,7 @@ import { getAdvancedSettingsCompForType } from '../advanced_settings';
 interface Props {
   onSubmit: (property: Record<string, any>) => void;
   defaultValue?: Record<string, any>;
+  [key: string]: any;
 }
 
 const fieldConfig = (param: ParameterName): FieldConfig =>
@@ -83,7 +83,7 @@ const deSerializer = (property: Record<string, any>) => {
   return property;
 };
 
-export const PropertyEditor = ({ onSubmit, defaultValue }: Props) => {
+export const PropertyEditor = ({ onSubmit, defaultValue, ...rest }: Props) => {
   const [isAdvancedSettingsVisible, setIsAdvancedSettingsVisible] = useState<boolean>(false);
 
   const { form } = useForm({ defaultValue, serializer, deSerializer });
@@ -127,7 +127,7 @@ export const PropertyEditor = ({ onSubmit, defaultValue }: Props) => {
         const typeDefinition = dataTypesDefinition[selectedDatatype];
 
         return (
-          <EuiForm className="property-editor ">
+          <EuiForm className="property-editor" {...rest}>
             <EuiFlexGroup>
               {/* Field name */}
               <EuiFlexItem grow={false}>
@@ -223,7 +223,7 @@ export const PropertyEditor = ({ onSubmit, defaultValue }: Props) => {
 
             {renderAdvancedSettings(selectedDatatype)}
 
-            <EuiButton color="primary" size="s" onClick={submitForm} className="btn-save">
+            <EuiButton color="primary" fill size="s" onClick={submitForm} className="btn-save">
               Save
             </EuiButton>
           </EuiForm>

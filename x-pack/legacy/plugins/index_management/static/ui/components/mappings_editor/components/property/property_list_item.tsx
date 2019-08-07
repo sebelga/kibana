@@ -4,28 +4,32 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import React, { Fragment, useState } from 'react';
-import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
+import { EuiFlexItem, EuiFlexGroup, EuiButtonEmpty, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
 import { PropertyEditor } from './property_editor';
 import { Tree, TreeItem } from '../tree';
 import { usePropertiesState, usePropertiesDispatch } from '../properties_contex';
-
+import { getNestedFieldsPropName } from '../../helpers';
 interface Props {
   name: string;
   path: string;
   property: Record<string, any>;
-  // onRemove?: () => void;
-  // fieldPathPrefix?: string;
+  nestedDepth: number;
 }
 
-export const PropertyListItem = ({ name, property, path }: Props) => {
+export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) => {
   const { selectedPath } = usePropertiesState();
   const dispatch = usePropertiesDispatch();
 
   const hasChildren = Boolean(property.properties);
+  const nestedFieldPropName = getNestedFieldsPropName(property.type);
   const isEditMode = selectedPath === path;
   const [showChildren, setShowChildren] = useState<boolean>(isEditMode);
+  const mapNestedFieldNameToButtonLabel = {
+    fields: 'Add field',
+    properties: 'Add property',
+  };
 
   const onSubmitProperty = ({ name: updatedName, ...rest }: Record<string, any>) => {
     if (updatedName !== name) {
@@ -65,34 +69,15 @@ export const PropertyListItem = ({ name, property, path }: Props) => {
     </EuiFlexGroup>
   );
 
-  const renderEditForm = () => (
-    <PropertyEditor onSubmit={onSubmitProperty} defaultValue={{ name, ...property }} />
+  const renderEditForm = (style = {}) => (
+    <PropertyEditor
+      onSubmit={onSubmitProperty}
+      defaultValue={{ name, ...property }}
+      style={{ ...style, marginLeft: `${nestedDepth * -24 + 1}px` }}
+    />
   );
 
-  return hasChildren ? (
-    <Tree
-      headerContent={<PropertyView name={name} property={property} />}
-      rightHeaderContent={renderActionButtons()}
-      isOpen={isEditMode ? true : showChildren}
-      onToggle={() => setShowChildren(prev => !prev)}
-    >
-      <Fragment>
-        {isEditMode && renderEditForm()}
-        {Object.entries(property.properties)
-          // Make sure to display the fields in alphabetical order
-          .sort(([a], [b]) => (a < b ? -1 : 1))
-          .map(([childName, childProperty], i) => (
-            <TreeItem key={`${path}.properties.${childName}`}>
-              <PropertyListItem
-                name={childName}
-                path={`${path}.properties.${childName}`}
-                property={childProperty as any}
-              />
-            </TreeItem>
-          ))}
-      </Fragment>
-    </Tree>
-  ) : (
+  const renderNoChildren = () => (
     <Fragment>
       <EuiFlexGroup>
         <EuiFlexItem>
@@ -102,5 +87,52 @@ export const PropertyListItem = ({ name, property, path }: Props) => {
       </EuiFlexGroup>
       {isEditMode && renderEditForm()}
     </Fragment>
+  );
+
+  const renderAddSubField = () => (
+    <div>
+      <EuiButtonEmpty
+        size="xs"
+        onClick={() => window.alert('Button clicked')}
+        iconType="plusInCircle"
+      >
+        {mapNestedFieldNameToButtonLabel[nestedFieldPropName!]}
+      </EuiButtonEmpty>
+    </div>
+  );
+
+  return Boolean(nestedFieldPropName) ? (
+    <Fragment>
+      {isEditMode && <div className="property-list-item__overlay"></div>}
+      {hasChildren ? (
+        <Tree
+          headerContent={<PropertyView name={name} property={property} />}
+          rightHeaderContent={renderActionButtons()}
+          isOpen={isEditMode ? true : showChildren}
+          onToggle={() => setShowChildren(prev => !prev)}
+        >
+          <Fragment>
+            {isEditMode && renderEditForm({ marginTop: 0, marginBottom: '12px' })}
+            {Object.entries(property.properties)
+              // Make sure to display the fields in alphabetical order
+              .sort(([a], [b]) => (a < b ? -1 : 1))
+              .map(([childName, childProperty], i) => (
+                <TreeItem key={`${path}.properties.${childName}`}>
+                  <PropertyListItem
+                    name={childName}
+                    path={`${path}.properties.${childName}`}
+                    property={childProperty as any}
+                    nestedDepth={nestedDepth + 1}
+                  />
+                </TreeItem>
+              ))}
+          </Fragment>
+        </Tree>
+      ) : (
+        <Fragment>{renderNoChildren()}</Fragment>
+      )}
+    </Fragment>
+  ) : (
+    renderNoChildren()
   );
 };

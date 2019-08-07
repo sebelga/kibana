@@ -41,7 +41,12 @@ export const DocumentFields = ({ defaultProperties = {}, onUpdate }: Props) => {
                   .sort(([a], [b]) => (a < b ? -1 : 1))
                   .map(([name, property], i) => (
                     <TreeItem key={name}>
-                      <PropertyListItem name={name} path={name} property={property as any} />
+                      <PropertyListItem
+                        name={name}
+                        path={name}
+                        property={property as any}
+                        nestedDepth={1}
+                      />
                     </TreeItem>
                   ))}
               </Tree>

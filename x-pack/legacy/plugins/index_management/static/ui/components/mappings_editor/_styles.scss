@@ -4,20 +4,27 @@
 
   .property-editor {
     background-color: #fafbfd;
+    box-shadow: inset 0px 1px 3px 1px rgba(0,0,0,0.2);
     margin-top: $gutter;
-    margin-bottom: $gutter;
-    margin-left: $gutter * -2 + 1px; // add 1 px to not hide the li border
-    padding: 0 12px 12px;
+    padding: $gutter;
     position: relative;
     padding-bottom: $gutter;
     z-index: 1;
 
     .btn-save {
-      background-color: white;
       position: absolute;
-      top: $gutter * 0.5;
-      right: $gutter * 0.5;
+      top: -38px;
+      right: 0;
     }
+  }
+
+  .property-list-item__overlay {
+    position: absolute;
+    top: 0;
+    left: 1px;
+    right: 0;
+    height: 48px;
+    background-color: rgba(255, 255, 255, 0.65);
   }
 
   .tree,
@@ -42,7 +49,7 @@
 
   .tree li {
     margin:0;
-    padding-left: 1.5em;
+    padding-left: $gutter * 2;
     line-height:2em;
     position:relative;
     margin-bottom: $gutter;

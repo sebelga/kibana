@@ -21,6 +21,15 @@ export const getNestedFieldsPropName = (selectedDatatype: DataType) => {
   return undefined;
 };
 
+export const getParentObject = (path: string, object = {}): Record<string, any> => {
+  const pathToArray = path.split('.');
+  if (pathToArray.length === 1) {
+    return object;
+  }
+  const parentPath = pathToArray.slice(0, -1).join('.');
+  return get(object, parentPath);
+};
+
 // We use an old version of lodash that does not have the _.unset() utility method.
 // We implement our own here.
 export const unset = (object: Record<string, any>, path: string): boolean => {
@@ -32,8 +41,7 @@ export const unset = (object: Record<string, any>, path: string): boolean => {
     hasBeenRemoved = {}.hasOwnProperty.call(object, prop);
     delete object[prop];
   } else {
-    const parentPath = pathToArray.slice(0, -1).join('.');
-    const parentObject = get(object, parentPath);
+    const parentObject = getParentObject(path, object);
     if (!parentObject || typeof parentObject !== 'object') {
       hasBeenRemoved = false;
     } else {

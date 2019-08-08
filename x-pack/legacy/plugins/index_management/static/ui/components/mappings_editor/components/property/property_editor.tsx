@@ -20,9 +20,11 @@ import {
   UseField,
   FormDataProvider,
   FieldConfig,
+  ValidationConfig,
 } from '../../../../../../../../../../src/plugins/elasticsearch_ui_shared/static/forms/hook_form_lib';
 import { Field } from '../../../../../../../../../../src/plugins/elasticsearch_ui_shared/static/forms/components';
 
+import { nameConflictError } from '../../errors';
 import {
   parametersDefinition,
   dataTypesDefinition,
@@ -37,9 +39,26 @@ import { getAdvancedSettingsCompForType } from '../advanced_settings';
 
 interface Props {
   onSubmit: (property: Record<string, any>) => void;
+  onCancel: () => void;
   defaultValue?: Record<string, any>;
+  parentObject: Record<string, any>;
   [key: string]: any;
 }
+
+// We need to dynamically add the "nameValidation" as it validates
+// that the field name value provided does not already exist on the parent object.
+const updateNameParameterValidations = (
+  fieldConfig: FieldConfig,
+  parentObject: Record<string, any>,
+  initialValue = ''
+): ValidationConfig[] => {
+  const nameValidation: ValidationConfig['validator'] = ({ path, value, form, formData }) => {
+    if (Object.keys(parentObject).some(key => key !== initialValue && key === value)) {
+      return nameConflictError();
+    }
+  };
+  return [...fieldConfig.validations!, { validator: nameValidation }];
+};
 
 const fieldConfig = (param: ParameterName): FieldConfig =>
   parametersDefinition[param].fieldConfig || {};
@@ -83,7 +102,13 @@ const deSerializer = (property: Record<string, any>) => {
   return property;
 };
 
-export const PropertyEditor = ({ onSubmit, defaultValue, ...rest }: Props) => {
+export const PropertyEditor = ({
+  onSubmit,
+  onCancel,
+  defaultValue,
+  parentObject,
+  ...rest
+}: Props) => {
   const [isAdvancedSettingsVisible, setIsAdvancedSettingsVisible] = useState<boolean>(false);
 
   const { form } = useForm({ defaultValue, serializer, deSerializer });
@@ -135,8 +160,16 @@ export const PropertyEditor = ({ onSubmit, defaultValue, ...rest }: Props) => {
                   path="name"
                   form={form}
                   defaultValue={isEditMode ? undefined : defaultValueParam('name')} // "undefined" means: look into the "defaultValue" object passed to the form
-                  config={fieldConfig('name')}
+                  config={{
+                    ...fieldConfig('name'),
+                    validations: updateNameParameterValidations(
+                      fieldConfig('name'),
+                      parentObject,
+                      form.getFieldDefaultValue('name') as string
+                    ),
+                  }}
                   component={getComponentForParameter('name')}
+                  componentProps={{ parentObject }}
                 />
               </EuiFlexItem>
 
@@ -222,10 +255,18 @@ export const PropertyEditor = ({ onSubmit, defaultValue, ...rest }: Props) => {
             )}
 
             {renderAdvancedSettings(selectedDatatype)}
-
-            <EuiButton color="primary" fill size="s" onClick={submitForm} className="btn-save">
-              Save
-            </EuiButton>
+            <EuiFlexGroup className="action-buttons" gutterSize="m">
+              <EuiFlexItem grow={false}>
+                <EuiButtonEmpty color="primary" onClick={onCancel}>
+                  Cancel
+                </EuiButtonEmpty>
+              </EuiFlexItem>
+              <EuiFlexItem grow={false}>
+                <EuiButton color="secondary" fill size="s" onClick={submitForm}>
+                  {isEditMode ? 'Done' : 'Add'}
+                </EuiButton>
+              </EuiFlexItem>
+            </EuiFlexGroup>
           </EuiForm>
         );
       }}

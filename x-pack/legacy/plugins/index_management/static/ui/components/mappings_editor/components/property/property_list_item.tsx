@@ -4,13 +4,13 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import React, { Fragment, useState } from 'react';
-import { EuiFlexItem, EuiFlexGroup, EuiButtonEmpty, EuiButtonIcon } from '@elastic/eui';
+import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
 import { PropertyEditor } from './property_editor';
 import { Tree, TreeItem } from '../tree';
 import { usePropertiesState, usePropertiesDispatch } from '../properties_contex';
-import { getNestedFieldsPropName } from '../../helpers';
+import { getNestedFieldsPropName, getParentObject } from '../../helpers';
 interface Props {
   name: string;
   path: string;
@@ -19,43 +19,64 @@ interface Props {
 }
 
 export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) => {
-  const { selectedPath } = usePropertiesState();
+  const { selectedPath, selectedObjectToAddProperty, properties } = usePropertiesState();
   const dispatch = usePropertiesDispatch();
 
-  const hasChildren = Boolean(property.properties);
+  const hasChildren = Boolean(property.properties) || Boolean(property.fields);
   const nestedFieldPropName = getNestedFieldsPropName(property.type);
+  const allowChildProperty = Boolean(nestedFieldPropName);
+  const children = allowChildProperty && property[nestedFieldPropName!];
   const isEditMode = selectedPath === path;
-  const [showChildren, setShowChildren] = useState<boolean>(isEditMode);
-  const mapNestedFieldNameToButtonLabel = {
-    fields: 'Add field',
-    properties: 'Add property',
-  };
+  const isCreateMode = selectedObjectToAddProperty === path;
+  const isPropertyEditorVisible = isEditMode || isCreateMode;
+  const parentObject = getParentObject(path, properties);
+  const [showChildren, setShowChildren] = useState<boolean>(isPropertyEditorVisible);
+  // const mapNestedFieldNameToButtonLabel = {
+  //   fields: 'Add field',
+  //   properties: 'Add property',
+  // };
 
   const onSubmitProperty = ({ name: updatedName, ...rest }: Record<string, any>) => {
-    if (updatedName !== name) {
+    let pathToSaveProperty = path;
+    if (isEditMode && updatedName !== name) {
       // The name has been updated, we need to
       // 1. Change the property path to the new path
       // 2. Replace the old property at the new path
       const pathToArray = path.split('.');
       pathToArray[pathToArray.length - 1] = updatedName;
-      const newPath = pathToArray.join('.');
+      pathToSaveProperty = pathToArray.join('.');
 
-      dispatch({ type: 'updatePropertyPath', oldPath: path, newPath });
-      dispatch({ type: 'saveProperty', path: newPath, value: rest });
-    } else {
-      dispatch({ type: 'saveProperty', path, value: rest });
+      dispatch({ type: 'updatePropertyPath', oldPath: path, newPath: pathToSaveProperty });
+    } else if (isCreateMode) {
+      // nestedFieldPropName is either "properties" (for object and nested types)
+      // or "fields" (for text and keyword types).
+      pathToSaveProperty = `${path}.${nestedFieldPropName}.${updatedName}`;
+      // Make sure the object is unfolded
+      setShowChildren(true);
     }
+    dispatch({ type: 'saveProperty', path: pathToSaveProperty, value: rest });
   };
 
   const renderActionButtons = () => (
     <EuiFlexGroup gutterSize="xs">
+      {allowChildProperty && (
+        <EuiFlexItem>
+          <EuiButtonIcon
+            color="primary"
+            onClick={() => dispatch({ type: 'selectObjectToAddProperty', value: path })}
+            iconType="plusInCircle"
+            aria-label="Add property"
+            disabled={selectedPath !== null || selectedObjectToAddProperty !== null}
+          />
+        </EuiFlexItem>
+      )}
       <EuiFlexItem>
         <EuiButtonIcon
           color="primary"
           onClick={() => dispatch({ type: 'selectPath', value: path })}
           iconType="pencil"
-          aria-label="Edit"
-          disabled={selectedPath !== null}
+          aria-label="Edit property"
+          disabled={selectedPath !== null || selectedObjectToAddProperty !== null}
         />
       </EuiFlexItem>
       <EuiFlexItem>
@@ -63,7 +84,8 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
           color="danger"
           onClick={() => window.alert('Ok')}
           iconType="trash"
-          aria-label="Delete"
+          aria-label="Delete property"
+          disabled={selectedPath !== null || selectedObjectToAddProperty !== null}
         />
       </EuiFlexItem>
     </EuiFlexGroup>
@@ -72,7 +94,13 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   const renderEditForm = (style = {}) => (
     <PropertyEditor
       onSubmit={onSubmitProperty}
-      defaultValue={{ name, ...property }}
+      onCancel={() =>
+        isCreateMode
+          ? dispatch({ type: 'selectObjectToAddProperty', value: null })
+          : dispatch({ type: 'selectPath', value: null })
+      }
+      defaultValue={isCreateMode ? undefined : { name, ...property }}
+      parentObject={isCreateMode ? property[nestedFieldPropName!] : parentObject}
       style={{ ...style, marginLeft: `${nestedDepth * -24 + 1}px` }}
     />
   );
@@ -85,42 +113,30 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{renderActionButtons()}</EuiFlexItem>
       </EuiFlexGroup>
-      {isEditMode && renderEditForm()}
+      {isPropertyEditorVisible && renderEditForm()}
     </Fragment>
   );
 
-  const renderAddSubField = () => (
-    <div>
-      <EuiButtonEmpty
-        size="xs"
-        onClick={() => window.alert('Button clicked')}
-        iconType="plusInCircle"
-      >
-        {mapNestedFieldNameToButtonLabel[nestedFieldPropName!]}
-      </EuiButtonEmpty>
-    </div>
-  );
-
-  return Boolean(nestedFieldPropName) ? (
+  return allowChildProperty ? (
     <Fragment>
-      {isEditMode && <div className="property-list-item__overlay"></div>}
+      {isPropertyEditorVisible && <div className="property-list-item__overlay"></div>}
       {hasChildren ? (
         <Tree
           headerContent={<PropertyView name={name} property={property} />}
           rightHeaderContent={renderActionButtons()}
-          isOpen={isEditMode ? true : showChildren}
+          isOpen={isPropertyEditorVisible ? true : showChildren}
           onToggle={() => setShowChildren(prev => !prev)}
         >
           <Fragment>
-            {isEditMode && renderEditForm({ marginTop: 0, marginBottom: '12px' })}
-            {Object.entries(property.properties)
+            {isPropertyEditorVisible && renderEditForm({ marginTop: 0, marginBottom: '12px' })}
+            {Object.entries(children)
               // Make sure to display the fields in alphabetical order
               .sort(([a], [b]) => (a < b ? -1 : 1))
               .map(([childName, childProperty], i) => (
-                <TreeItem key={`${path}.properties.${childName}`}>
+                <TreeItem key={`${path}.${nestedFieldPropName}.${childName}`}>
                   <PropertyListItem
                     name={childName}
-                    path={`${path}.properties.${childName}`}
+                    path={`${path}.${nestedFieldPropName}.${childName}`}
                     property={childProperty as any}
                     nestedDepth={nestedDepth + 1}
                   />

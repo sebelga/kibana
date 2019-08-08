@@ -11,10 +11,12 @@ import { unset } from '../helpers';
 interface State {
   properties: Record<string, any>;
   selectedPath: string | null;
+  selectedObjectToAddProperty: string | null;
 }
 
 type Action =
   | { type: 'selectPath'; value: string | null }
+  | { type: 'selectObjectToAddProperty'; value: string | null }
   | { type: 'saveProperty'; path: string; value: Record<string, any> }
   | { type: 'updatePropertyPath'; oldPath: string; newPath: string };
 
@@ -29,11 +31,14 @@ function propertiesReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'selectPath':
       return { ...state, selectedPath: action.value };
+    case 'selectObjectToAddProperty':
+      return { ...state, selectedObjectToAddProperty: action.value };
     case 'saveProperty':
       updatedProperties = set({ ...state.properties }, action.path, action.value);
       return {
         ...state,
         selectedPath: null,
+        selectedObjectToAddProperty: null,
         properties: updatedProperties,
       };
     case 'updatePropertyPath':
@@ -60,6 +65,7 @@ export const PropertiesProvider = ({ children, defaultProperties = {} }: Props) 
   const [state, dispatch] = useReducer(propertiesReducer, {
     properties: defaultProperties,
     selectedPath: null,
+    selectedObjectToAddProperty: null,
   });
 
   return (

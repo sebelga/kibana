@@ -8,6 +8,7 @@ import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
 import { PropertyEditor } from './property_editor';
+import { SavePropertyProvider } from './save_property_provider';
 import { DeletePropertyProvider } from './delete_property_provider';
 import { Tree, TreeItem } from '../tree';
 import { usePropertiesState, usePropertiesDispatch } from '../properties_contex';
@@ -24,7 +25,7 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   const dispatch = usePropertiesDispatch();
 
   const {
-    hasChildren,
+    hasChildProperties,
     nestedFieldPropName,
     allowChildProperty,
     childProperties,
@@ -35,31 +36,6 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   const isPropertyEditorVisible = isEditMode || isCreateMode;
   const parentObject = getParentObject(path, properties);
   const [showChildren, setShowChildren] = useState<boolean>(isPropertyEditorVisible);
-  // const mapNestedFieldNameToButtonLabel = {
-  //   fields: 'Add field',
-  //   properties: 'Add property',
-  // };
-
-  const onSubmitProperty = ({ name: updatedName, ...rest }: Record<string, any>) => {
-    let pathToSaveProperty = path;
-    if (isEditMode && updatedName !== name) {
-      // The name has been updated, we need to
-      // 1. Change the property path to the new path
-      // 2. Replace the old property at the new path
-      const pathToArray = path.split('.');
-      pathToArray[pathToArray.length - 1] = updatedName;
-      pathToSaveProperty = pathToArray.join('.');
-
-      dispatch({ type: 'updatePropertyPath', oldPath: path, newPath: pathToSaveProperty });
-    } else if (isCreateMode) {
-      // nestedFieldPropName is either "properties" (for object and nested types)
-      // or "fields" (for text and keyword types).
-      pathToSaveProperty = `${path}.${nestedFieldPropName}.${updatedName}`;
-      // Make sure the object is unfolded
-      setShowChildren(true);
-    }
-    dispatch({ type: 'saveProperty', path: pathToSaveProperty, value: rest });
-  };
 
   const renderActionButtons = () => (
     <EuiFlexGroup gutterSize="xs">
@@ -100,17 +76,25 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   );
 
   const renderEditForm = (style = {}) => (
-    <PropertyEditor
-      onSubmit={onSubmitProperty}
-      onCancel={() =>
-        isCreateMode
-          ? dispatch({ type: 'selectObjectToAddProperty', value: null })
-          : dispatch({ type: 'selectPath', value: null })
-      }
-      defaultValue={isCreateMode ? undefined : { name, ...property }}
-      parentObject={isCreateMode ? property[nestedFieldPropName!] : parentObject}
-      style={{ ...style, marginLeft: `${nestedDepth * -24 + 1}px` }}
-    />
+    <SavePropertyProvider>
+      {saveProperty => (
+        <PropertyEditor
+          onSubmit={(newProperty: Record<string, any>) => {
+            saveProperty({ newProperty, oldProperty: property, path, isEditMode, isCreateMode });
+            // Make sure the object is unfolded
+            setShowChildren(true);
+          }}
+          onCancel={() =>
+            isCreateMode
+              ? dispatch({ type: 'selectObjectToAddProperty', value: null })
+              : dispatch({ type: 'selectPath', value: null })
+          }
+          defaultValue={isCreateMode ? undefined : { name, ...property }}
+          parentObject={isCreateMode ? property[nestedFieldPropName!] : parentObject}
+          style={{ ...style, marginLeft: `${nestedDepth * -24 + 1}px` }}
+        />
+      )}
+    </SavePropertyProvider>
   );
 
   const renderNoChildren = () => (
@@ -128,7 +112,7 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   return allowChildProperty ? (
     <Fragment>
       {isPropertyEditorVisible && <div className="property-list-item__overlay"></div>}
-      {hasChildren ? (
+      {hasChildProperties ? (
         <Tree
           headerContent={<PropertyView name={name} property={property} />}
           rightHeaderContent={renderActionButtons()}

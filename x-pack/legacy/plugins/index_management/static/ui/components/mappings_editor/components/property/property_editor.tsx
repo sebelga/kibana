@@ -208,7 +208,11 @@ export const PropertyEditor = ({
                   <UseField
                     path="subType"
                     form={form}
-                    defaultValue={isEditMode ? undefined : typeDefinition.subTypes.types[0]}
+                    defaultValue={
+                      isEditMode && selectedDatatype === defaultValue!.type
+                        ? undefined
+                        : typeDefinition.subTypes.types[0]
+                    }
                     config={{
                       ...fieldConfig('type'),
                       label: typeDefinition.subTypes.label,

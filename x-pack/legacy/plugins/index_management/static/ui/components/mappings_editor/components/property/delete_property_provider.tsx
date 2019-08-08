@@ -31,9 +31,9 @@ export const DeletePropertyProvider = ({ children }: Props) => {
   };
 
   const deleteProperty: DeletePropertyFunc = (property, path) => {
-    const { hasChildren, childProperties } = getNestedFieldMeta(property);
+    const { hasChildProperties } = getNestedFieldMeta(property);
 
-    if (hasChildren && Object.keys(childProperties).length > 0) {
+    if (hasChildProperties) {
       setState({ isModalOpen: true, property, path });
     } else {
       dispatch({ type: 'deleteProperty', path });

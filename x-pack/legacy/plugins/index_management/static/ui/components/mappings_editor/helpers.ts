@@ -24,16 +24,20 @@ const getNestedFieldsPropName = (selectedDatatype: DataType) => {
 export const getNestedFieldMeta = (
   property: Record<string, any>
 ): {
-  hasChildren: boolean;
+  hasChildProperties: boolean;
   allowChildProperty: boolean;
   nestedFieldPropName: string | undefined;
   childProperties: Record<string, any>;
 } => {
-  const hasChildren = Boolean(property.properties) || Boolean(property.fields);
   const nestedFieldPropName = getNestedFieldsPropName(property.type);
+  const hasChildProperties =
+    typeof nestedFieldPropName !== 'undefined' &&
+    Boolean(property[nestedFieldPropName]) &&
+    Object.keys(property[nestedFieldPropName]).length > 0;
+
   const allowChildProperty = Boolean(nestedFieldPropName);
   const childProperties = allowChildProperty && property[nestedFieldPropName!];
-  return { hasChildren, nestedFieldPropName, allowChildProperty, childProperties };
+  return { hasChildProperties, nestedFieldPropName, allowChildProperty, childProperties };
 };
 
 export const getParentObject = (path: string, object = {}): Record<string, any> => {

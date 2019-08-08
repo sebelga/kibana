@@ -12,13 +12,28 @@ export const hasNestedProperties = (selectedDatatype: DataType) =>
   selectedDatatype === 'text' ||
   selectedDatatype === 'keyword';
 
-export const getNestedFieldsPropName = (selectedDatatype: DataType) => {
+const getNestedFieldsPropName = (selectedDatatype: DataType) => {
   if (selectedDatatype === 'text' || selectedDatatype === 'keyword') {
     return 'fields';
   } else if (selectedDatatype === 'object' || selectedDatatype === 'nested') {
     return 'properties';
   }
   return undefined;
+};
+
+export const getNestedFieldMeta = (
+  property: Record<string, any>
+): {
+  hasChildren: boolean;
+  allowChildProperty: boolean;
+  nestedFieldPropName: string | undefined;
+  childProperties: Record<string, any>;
+} => {
+  const hasChildren = Boolean(property.properties) || Boolean(property.fields);
+  const nestedFieldPropName = getNestedFieldsPropName(property.type);
+  const allowChildProperty = Boolean(nestedFieldPropName);
+  const childProperties = allowChildProperty && property[nestedFieldPropName!];
+  return { hasChildren, nestedFieldPropName, allowChildProperty, childProperties };
 };
 
 export const getParentObject = (path: string, object = {}): Record<string, any> => {

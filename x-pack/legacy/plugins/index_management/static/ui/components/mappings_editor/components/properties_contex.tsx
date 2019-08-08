@@ -18,6 +18,7 @@ type Action =
   | { type: 'selectPath'; value: string | null }
   | { type: 'selectObjectToAddProperty'; value: string | null }
   | { type: 'saveProperty'; path: string; value: Record<string, any> }
+  | { type: 'deleteProperty'; path: string }
   | { type: 'updatePropertyPath'; oldPath: string; newPath: string };
 
 type Dispatch = (action: Action) => void;
@@ -41,6 +42,13 @@ function propertiesReducer(state: State, action: Action): State {
         selectedObjectToAddProperty: null,
         properties: updatedProperties,
       };
+    case 'deleteProperty':
+      updatedProperties = { ...state.properties };
+      unset(updatedProperties, action.path);
+      return {
+        ...state,
+        properties: updatedProperties,
+      };
     case 'updatePropertyPath':
       const property = get(state.properties, action.oldPath);
       // Delete the property at the old path
@@ -51,6 +59,7 @@ function propertiesReducer(state: State, action: Action): State {
         ...state,
         properties: updatedProperties,
       };
+
     default:
       throw new Error(`Unhandled action type: ${action!.type}`);
   }

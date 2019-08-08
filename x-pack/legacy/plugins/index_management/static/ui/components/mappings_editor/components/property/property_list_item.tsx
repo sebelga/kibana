@@ -8,9 +8,10 @@ import { EuiFlexItem, EuiFlexGroup, EuiButtonIcon } from '@elastic/eui';
 
 import { PropertyView } from './property_view';
 import { PropertyEditor } from './property_editor';
+import { DeletePropertyProvider } from './delete_property_provider';
 import { Tree, TreeItem } from '../tree';
 import { usePropertiesState, usePropertiesDispatch } from '../properties_contex';
-import { getNestedFieldsPropName, getParentObject } from '../../helpers';
+import { getNestedFieldMeta, getParentObject } from '../../helpers';
 interface Props {
   name: string;
   path: string;
@@ -22,10 +23,13 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   const { selectedPath, selectedObjectToAddProperty, properties } = usePropertiesState();
   const dispatch = usePropertiesDispatch();
 
-  const hasChildren = Boolean(property.properties) || Boolean(property.fields);
-  const nestedFieldPropName = getNestedFieldsPropName(property.type);
-  const allowChildProperty = Boolean(nestedFieldPropName);
-  const children = allowChildProperty && property[nestedFieldPropName!];
+  const {
+    hasChildren,
+    nestedFieldPropName,
+    allowChildProperty,
+    childProperties,
+  } = getNestedFieldMeta(property);
+
   const isEditMode = selectedPath === path;
   const isCreateMode = selectedObjectToAddProperty === path;
   const isPropertyEditorVisible = isEditMode || isCreateMode;
@@ -80,13 +84,17 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
         />
       </EuiFlexItem>
       <EuiFlexItem>
-        <EuiButtonIcon
-          color="danger"
-          onClick={() => window.alert('Ok')}
-          iconType="trash"
-          aria-label="Delete property"
-          disabled={selectedPath !== null || selectedObjectToAddProperty !== null}
-        />
+        <DeletePropertyProvider>
+          {deleteProperty => (
+            <EuiButtonIcon
+              color="danger"
+              onClick={() => deleteProperty({ name, ...property }, path)}
+              iconType="trash"
+              aria-label="Delete property"
+              disabled={selectedPath !== null || selectedObjectToAddProperty !== null}
+            />
+          )}
+        </DeletePropertyProvider>
       </EuiFlexItem>
     </EuiFlexGroup>
   );
@@ -129,7 +137,7 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
         >
           <Fragment>
             {isPropertyEditorVisible && renderEditForm({ marginTop: 0, marginBottom: '12px' })}
-            {Object.entries(children)
+            {Object.entries(childProperties)
               // Make sure to display the fields in alphabetical order
               .sort(([a], [b]) => (a < b ? -1 : 1))
               .map(([childName, childProperty], i) => (

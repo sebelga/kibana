@@ -262,7 +262,13 @@ export const PropertyEditor = ({
                 </EuiButtonEmpty>
               </EuiFlexItem>
               <EuiFlexItem grow={false}>
-                <EuiButton color="secondary" fill size="s" onClick={submitForm}>
+                <EuiButton
+                  color="secondary"
+                  fill
+                  size="s"
+                  onClick={submitForm}
+                  isDisabled={form.isSubmitted && !form.isValid}
+                >
                   {isEditMode ? 'Done' : 'Add'}
                 </EuiButton>
               </EuiFlexItem>

@@ -20,7 +20,7 @@ interface Props {
 }
 
 export const DocumentFields = ({ onUpdate }: Props) => {
-  const { properties, selectedObjectToAddProperty } = usePropertiesState();
+  const { properties, selectedPath, selectedObjectToAddProperty } = usePropertiesState();
   const dispatch = usePropertiesDispatch();
 
   const showCreateForm = selectedObjectToAddProperty === '';
@@ -73,6 +73,7 @@ export const DocumentFields = ({ onUpdate }: Props) => {
           iconType="plusInCircle"
           size="s"
           onClick={() => dispatch!({ type: 'selectObjectToAddProperty', value: '' })}
+          isDisabled={selectedPath !== null || selectedObjectToAddProperty !== null}
         >
           Add property
         </EuiButton>

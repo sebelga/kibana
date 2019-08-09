@@ -106,10 +106,18 @@ export const SavePropertyProvider = ({ children }: Props) => {
         }
       }
     } else if (isCreateMode) {
-      // nestedFieldPropName is "properties" (for object and nested types)
-      // or "fields" (for text and keyword types).
-      const { nestedFieldPropName } = getNestedFieldMeta(oldProperty!);
-      pathToSaveProperty = `${path}.${nestedFieldPropName}.${updatedName}`;
+      if (oldProperty) {
+        // If there is an "oldProperty" it means we want to add the property
+        // in either its "properties" or "fields"
+        // nestedFieldPropName is "properties" (for object and nested types)
+        // or "fields" (for text and keyword types).
+        const { nestedFieldPropName } = getNestedFieldMeta(oldProperty!);
+        pathToSaveProperty = `${path}.${nestedFieldPropName}.${updatedName}`;
+      } else {
+        // If there are no "oldProperty" we add the property to the top level
+        // "properties" object.
+        pathToSaveProperty = updatedName;
+      }
     }
     dispatch({ type: 'saveProperty', path: pathToSaveProperty, value: rest });
   };

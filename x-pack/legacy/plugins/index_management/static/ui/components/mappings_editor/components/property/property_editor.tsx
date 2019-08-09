@@ -259,7 +259,9 @@ export const PropertyEditor = ({
             )}
 
             {renderAdvancedSettings(selectedDatatype)}
-            <EuiFlexGroup className="action-buttons" gutterSize="m">
+
+            <EuiSpacer size="l" />
+            <EuiFlexGroup justifyContent="flexEnd" gutterSize="m">
               <EuiFlexItem grow={false}>
                 <EuiButtonEmpty color="primary" onClick={onCancel}>
                   Cancel

@@ -26,7 +26,7 @@ interface State {
   isModalOpen: boolean;
   path: string | null;
   newProperty: Record<string, any> | null;
-  oldProperty: Record<string, any> | null;
+  oldProperty?: Record<string, any> | null;
 }
 
 export const SavePropertyProvider = ({ children }: Props) => {

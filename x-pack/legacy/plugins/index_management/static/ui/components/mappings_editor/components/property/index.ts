@@ -5,3 +5,6 @@
  */
 
 export * from './property_list_item';
+export * from './property_editor';
+export * from './save_property_provider';
+export * from './delete_property_provider';

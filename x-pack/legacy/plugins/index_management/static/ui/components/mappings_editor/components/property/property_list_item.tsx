@@ -80,9 +80,9 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
       {saveProperty => (
         <PropertyEditor
           onSubmit={(newProperty: Record<string, any>) => {
-            saveProperty({ newProperty, oldProperty: property, path, isEditMode, isCreateMode });
             // Make sure the object is unfolded
             setShowChildren(true);
+            saveProperty({ newProperty, oldProperty: property, path, isEditMode, isCreateMode });
           }}
           onCancel={() =>
             isCreateMode
@@ -95,6 +95,32 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
         />
       )}
     </SavePropertyProvider>
+  );
+
+  const renderPropertiesTree = () => (
+    <Tree
+      headerContent={<PropertyView name={name} property={property} />}
+      rightHeaderContent={renderActionButtons()}
+      isOpen={isPropertyEditorVisible ? true : showChildren}
+      onToggle={() => setShowChildren(prev => !prev)}
+    >
+      <Fragment>
+        {isPropertyEditorVisible && renderEditForm({ marginTop: 0, marginBottom: '12px' })}
+        {Object.entries(childProperties)
+          // Make sure to display the fields in alphabetical order
+          .sort(([a], [b]) => (a < b ? -1 : 1))
+          .map(([childName, childProperty], i) => (
+            <TreeItem key={`${path}.${nestedFieldPropName}.${childName}`}>
+              <PropertyListItem
+                name={childName}
+                path={`${path}.${nestedFieldPropName}.${childName}`}
+                property={childProperty as any}
+                nestedDepth={nestedDepth + 1}
+              />
+            </TreeItem>
+          ))}
+      </Fragment>
+    </Tree>
   );
 
   const renderNoChildren = () => (
@@ -112,33 +138,7 @@ export const PropertyListItem = ({ name, property, path, nestedDepth }: Props) =
   return allowChildProperty ? (
     <Fragment>
       {isPropertyEditorVisible && <div className="property-list-item__overlay"></div>}
-      {hasChildProperties ? (
-        <Tree
-          headerContent={<PropertyView name={name} property={property} />}
-          rightHeaderContent={renderActionButtons()}
-          isOpen={isPropertyEditorVisible ? true : showChildren}
-          onToggle={() => setShowChildren(prev => !prev)}
-        >
-          <Fragment>
-            {isPropertyEditorVisible && renderEditForm({ marginTop: 0, marginBottom: '12px' })}
-            {Object.entries(childProperties)
-              // Make sure to display the fields in alphabetical order
-              .sort(([a], [b]) => (a < b ? -1 : 1))
-              .map(([childName, childProperty], i) => (
-                <TreeItem key={`${path}.${nestedFieldPropName}.${childName}`}>
-                  <PropertyListItem
-                    name={childName}
-                    path={`${path}.${nestedFieldPropName}.${childName}`}
-                    property={childProperty as any}
-                    nestedDepth={nestedDepth + 1}
-                  />
-                </TreeItem>
-              ))}
-          </Fragment>
-        </Tree>
-      ) : (
-        <Fragment>{renderNoChildren()}</Fragment>
-      )}
+      {hasChildProperties ? renderPropertiesTree() : renderNoChildren()}
     </Fragment>
   ) : (
     renderNoChildren()

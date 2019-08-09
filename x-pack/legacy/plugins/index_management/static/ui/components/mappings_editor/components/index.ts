@@ -8,4 +8,5 @@ export * from './tree';
 export * from './property';
 export * from './configuration_form';
 export * from './document_fields';
+export * from './properties_contex';
 export { getComponentForParameter } from './parameters';

@@ -3,12 +3,12 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React, { Fragment } from 'react';
-import { EuiTitle, EuiSpacer } from '@elastic/eui';
+import React, { Fragment, useEffect, Dispatch } from 'react';
+import { EuiTitle, EuiSpacer, EuiButton } from '@elastic/eui';
 
 import { Tree, TreeItem } from './tree';
-import { PropertyListItem } from './property';
-import { PropertiesProvider, PropertiesConsumer } from './properties_contex';
+import { PropertyListItem, PropertyEditor, SavePropertyProvider } from './property';
+import { usePropertiesState, usePropertiesDispatch } from './properties_contex';
 
 export interface DocumentFieldsState {
   isValid: boolean;
@@ -17,10 +17,32 @@ export interface DocumentFieldsState {
 
 interface Props {
   onUpdate: (state: DocumentFieldsState) => void;
-  defaultProperties?: Record<string, any>;
 }
 
-export const DocumentFields = ({ defaultProperties = {}, onUpdate }: Props) => {
+export const DocumentFields = ({ onUpdate }: Props) => {
+  const { properties, selectedObjectToAddProperty } = usePropertiesState();
+  const dispatch = usePropertiesDispatch();
+
+  const showCreateForm = selectedObjectToAddProperty === '';
+
+  useEffect(() => {
+    onUpdate({ properties, isValid: true });
+  }, [properties]);
+
+  const renderCreateForm = (style = {}) => (
+    <SavePropertyProvider>
+      {saveProperty => (
+        <PropertyEditor
+          onSubmit={(newProperty: Record<string, any>) => {
+            saveProperty({ newProperty, path: '', isEditMode: false, isCreateMode: true });
+          }}
+          onCancel={() => dispatch({ type: 'selectObjectToAddProperty', value: null })}
+          parentObject={properties}
+        />
+      )}
+    </SavePropertyProvider>
+  );
+
   return (
     <Fragment>
       <EuiTitle size="s">
@@ -28,32 +50,33 @@ export const DocumentFields = ({ defaultProperties = {}, onUpdate }: Props) => {
       </EuiTitle>
       <EuiSpacer size="m" />
 
-      <PropertiesProvider defaultProperties={defaultProperties}>
-        <PropertiesConsumer>
-          {state => {
-            const { properties, selectedPath } = state!;
-            onUpdate({ properties, isValid: selectedPath === null });
-
-            return (
-              <Tree defaultIsOpen>
-                {Object.entries(properties)
-                  // Make sure to display the fields in alphabetical order
-                  .sort(([a], [b]) => (a < b ? -1 : 1))
-                  .map(([name, property], i) => (
-                    <TreeItem key={name}>
-                      <PropertyListItem
-                        name={name}
-                        path={name}
-                        property={property as any}
-                        nestedDepth={1}
-                      />
-                    </TreeItem>
-                  ))}
-              </Tree>
-            );
-          }}
-        </PropertiesConsumer>
-      </PropertiesProvider>
+      <Tree defaultIsOpen>
+        {Object.entries(properties)
+          // Make sure to display the fields in alphabetical order
+          .sort(([a], [b]) => (a < b ? -1 : 1))
+          .map(([name, property], i) => (
+            <TreeItem key={name}>
+              <PropertyListItem
+                name={name}
+                path={name}
+                property={property as any}
+                nestedDepth={1}
+              />
+            </TreeItem>
+          ))}
+      </Tree>
+      <EuiSpacer size="m" />
+      {showCreateForm ? (
+        renderCreateForm()
+      ) : (
+        <EuiButton
+          iconType="plusInCircle"
+          size="s"
+          onClick={() => dispatch!({ type: 'selectObjectToAddProperty', value: '' })}
+        >
+          Add property
+        </EuiButton>
+      )}
     </Fragment>
   );
 };

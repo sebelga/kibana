@@ -6,7 +6,12 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import { ConfigurationForm, DocumentFields, DocumentFieldsState } from './components';
+import {
+  ConfigurationForm,
+  PropertiesProvider,
+  DocumentFields,
+  DocumentFieldsState,
+} from './components';
 
 interface Props {
   setGetDataHandler: (
@@ -59,7 +64,9 @@ export const MappingsEditor = ({
       />
 
       {/* Document fields */}
-      <DocumentFields defaultProperties={defaultValue.properties} onUpdate={onPropertiesUpdate} />
+      <PropertiesProvider defaultProperties={defaultValue.properties}>
+        <DocumentFields onUpdate={onPropertiesUpdate} />
+      </PropertiesProvider>
     </div>
   );
 };

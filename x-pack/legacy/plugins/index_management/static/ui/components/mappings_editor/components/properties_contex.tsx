@@ -86,8 +86,6 @@ export const PropertiesProvider = ({ children, defaultProperties = {} }: Props) 
   );
 };
 
-export const PropertiesConsumer = PropertiesStateContext.Consumer;
-
 export const usePropertiesState = () => {
   const context = useContext(PropertiesStateContext);
   if (context === undefined) {

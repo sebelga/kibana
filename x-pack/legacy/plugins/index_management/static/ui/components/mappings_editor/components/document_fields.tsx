@@ -11,7 +11,7 @@ import { PropertyListItem, PropertyEditor, SavePropertyProvider } from './proper
 import { usePropertiesState, usePropertiesDispatch } from './properties_contex';
 
 export interface DocumentFieldsState {
-  isValid: boolean;
+  isEditing: boolean;
   properties: Record<string, any>;
 }
 
@@ -26,8 +26,11 @@ export const DocumentFields = ({ onUpdate }: Props) => {
   const showCreateForm = selectedObjectToAddProperty === '';
 
   useEffect(() => {
-    onUpdate({ properties, isValid: true });
-  }, [properties]);
+    onUpdate({
+      properties,
+      isEditing: selectedPath !== null || selectedObjectToAddProperty !== null,
+    });
+  }, [properties, selectedPath, selectedObjectToAddProperty]);
 
   const renderCreateForm = (style = {}) => (
     <SavePropertyProvider>
@@ -65,7 +68,7 @@ export const DocumentFields = ({ onUpdate }: Props) => {
             </TreeItem>
           ))}
       </Tree>
-      <EuiSpacer size="m" />
+      <EuiSpacer size="s" />
       {showCreateForm ? (
         renderCreateForm()
       ) : (

@@ -12,7 +12,7 @@ import { getNestedFieldMeta } from '../../helpers';
 
 type SavePropertyFunc = (args: {
   newProperty: Record<string, any>;
-  oldProperty: Record<string, any>;
+  oldProperty?: Record<string, any>;
   path: string;
   isEditMode: boolean;
   isCreateMode: boolean;
@@ -26,7 +26,7 @@ interface State {
   isModalOpen: boolean;
   path: string | null;
   newProperty: Record<string, any> | null;
-  oldProperty?: Record<string, any> | null;
+  oldProperty: Record<string, any> | null;
 }
 
 export const SavePropertyProvider = ({ children }: Props) => {
@@ -50,7 +50,6 @@ export const SavePropertyProvider = ({ children }: Props) => {
     isEditMode,
   }) => {
     const { name: updatedName, ...rest } = newProperty;
-    const { hasChildProperties, nestedFieldPropName } = getNestedFieldMeta(oldProperty);
 
     const handleUpdateFieldName = (newName: string): string => {
       // The name has been updated, we need to
@@ -68,6 +67,8 @@ export const SavePropertyProvider = ({ children }: Props) => {
       oldType: string,
       newType: string
     ): { requiresConfirmation: boolean } => {
+      const { hasChildProperties } = getNestedFieldMeta(oldProperty!);
+
       if (!hasChildProperties) {
         // No child properties will be deleted, no confirmation needed.
         return { requiresConfirmation: false };
@@ -94,19 +95,20 @@ export const SavePropertyProvider = ({ children }: Props) => {
       if (updatedName !== name) {
         pathToSaveProperty = handleUpdateFieldName(updatedName);
       }
-      if (rest.type !== oldProperty.type) {
+      if (rest.type !== oldProperty!.type) {
         // We need to check if, by changing the type, we need
         // to delete the possible child properties ("fields" or "properties")
         // and warn the user about it.
-        const { requiresConfirmation } = handleUpdateFieldType(oldProperty.type, rest.type);
+        const { requiresConfirmation } = handleUpdateFieldType(oldProperty!.type, rest.type);
         if (requiresConfirmation) {
-          setState({ isModalOpen: true, newProperty, oldProperty, path });
+          setState({ isModalOpen: true, newProperty, oldProperty: oldProperty!, path });
           return;
         }
       }
     } else if (isCreateMode) {
       // nestedFieldPropName is "properties" (for object and nested types)
       // or "fields" (for text and keyword types).
+      const { nestedFieldPropName } = getNestedFieldMeta(oldProperty!);
       pathToSaveProperty = `${path}.${nestedFieldPropName}.${updatedName}`;
     }
     dispatch({ type: 'saveProperty', path: pathToSaveProperty, value: rest });
@@ -121,7 +123,7 @@ export const SavePropertyProvider = ({ children }: Props) => {
 
   const renderModal = () => {
     const { newProperty, oldProperty } = state;
-    const title = `Confirm change '${newProperty!.name}' type.`;
+    const title = `Confirm change '${newProperty!.name}' type to "${newProperty!.type}".`;
     const { nestedFieldPropName } = getNestedFieldMeta(oldProperty!);
     const childrenCount = Object.keys(oldProperty![nestedFieldPropName!]).length;
 
@@ -142,10 +144,7 @@ export const SavePropertyProvider = ({ children }: Props) => {
               {childrenCount > 1 ? 'their' : 'its'} possible nested properties.
             </p>
             <EuiTitle size="s">
-              <h4>
-                Nested {childrenCount > 1 ? 'properties' : 'property'}, and all that will also be
-                deleted
-              </h4>
+              <h4>Nested {childrenCount > 1 ? 'properties' : 'property'} that will be removed</h4>
             </EuiTitle>
             <ul>
               {Object.keys(oldProperty![nestedFieldPropName!])

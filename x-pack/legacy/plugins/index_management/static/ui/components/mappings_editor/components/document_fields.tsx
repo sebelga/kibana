@@ -3,7 +3,7 @@
  * or more contributor license agreements. Licensed under the Elastic License;
  * you may not use this file except in compliance with the Elastic License.
  */
-import React, { Fragment, useEffect, Dispatch } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { EuiTitle, EuiSpacer, EuiButton } from '@elastic/eui';
 
 import { Tree, TreeItem } from './tree';

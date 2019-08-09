@@ -47,8 +47,9 @@ export const DeletePropertyProvider = ({ children }: Props) => {
 
   const renderModal = () => {
     const { property } = state;
+    const { nestedFieldPropName } = getNestedFieldMeta(property!);
     const title = `Remove property '${property!.name}'?`;
-    const childrenCount = Object.keys(property!.properties).length;
+    const childrenCount = Object.keys(property![nestedFieldPropName!]).length;
 
     return (
       <EuiOverlayMask>
@@ -70,7 +71,7 @@ export const DeletePropertyProvider = ({ children }: Props) => {
               <h4>Child properties that will also be deleted</h4>
             </EuiTitle>
             <ul>
-              {Object.keys(property!.properties)
+              {Object.keys(property![nestedFieldPropName!])
                 .sort()
                 .map(name => (
                   <li key={name}>{name}</li>

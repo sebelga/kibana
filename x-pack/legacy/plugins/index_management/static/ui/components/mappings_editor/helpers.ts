@@ -26,7 +26,7 @@ export const getNestedFieldMeta = (
 ): {
   hasChildProperties: boolean;
   allowChildProperty: boolean;
-  nestedFieldPropName: string | undefined;
+  nestedFieldPropName: 'fields' | 'properties' | undefined;
   childProperties: Record<string, any>;
 } => {
   const nestedFieldPropName = getNestedFieldsPropName(property.type);

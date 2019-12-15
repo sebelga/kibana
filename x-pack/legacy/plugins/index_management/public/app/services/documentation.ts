@@ -70,6 +70,10 @@ class DocumentationService {
   public getNullValueLink() {
     return `${this.esDocsBase}/null-value.html`;
   }
+
+  public getDateFormatLink() {
+    return `${this.esDocsBase}/mapping-date-format.html`;
+  }
 }
 
 export const documentationService = new DocumentationService();

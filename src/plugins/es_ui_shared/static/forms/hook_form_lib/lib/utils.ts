@@ -40,6 +40,11 @@ export const flattenObject = (
     return acc;
   }, to);
 
+export const filterOutUndefinedValues = (object: { [key: string]: any }): { [key: string]: any } =>
+  Object.entries(object)
+    .filter(({ 1: value }) => value !== undefined)
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
 /**
  * Helper to map the object of fields to any of its value
  *

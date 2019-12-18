@@ -81,8 +81,14 @@ export const MappingsEditor = React.memo(
                 <EuiTabs>
                   <EuiTab
                     onClick={() => {
-                      // Make sure to update our reference to the configuration form data
-                      // so we can provided it to the form when navigating to its tab.
+                      /**
+                       * Make sure to update our reference to the configuration form data
+                       * so we can provided it to the form when navigating to its tab.
+
+                       * Note: for now this is enough as the form can never be invalid. In the future,
+                       * if we add some fields that require validationg, we would need to validate the form
+                       * at this step and maybe show a CallOut to the user in case the form is invalid.
+                       */
                       configurationFormData.current = getConfigurationFormData();
                       selectTab('fields');
                     }}

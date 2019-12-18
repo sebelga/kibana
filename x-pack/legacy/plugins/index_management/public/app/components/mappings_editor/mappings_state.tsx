@@ -127,7 +127,15 @@ export const MappingsState = React.memo(({ children, onUpdate, defaultValue }: P
         };
       },
       validate: async () => {
-        const promisesToValidate = [state.configuration.validate()];
+        /**
+         * Note: for now we DON'T validate the configuration form here as it can never be invalid.
+         * Otherwise we would have to initialize it: `const promisesToValidate = [state.configuration.validate()];`)
+         *
+         * This is to simplify the logic and avoid a bug if the form is not present on the screen (we navigated away from its tab)
+         * and we click the "next" button. The `state.configuration.validate()` is still in our state, but there aren't any fields
+         * so the validity return is "undefined", which blocks the navigation.
+         */
+        const promisesToValidate = [];
 
         if (state.fieldForm !== undefined && !bypassFieldFormValidation) {
           promisesToValidate.push(state.fieldForm.validate());

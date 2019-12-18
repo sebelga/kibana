@@ -21,7 +21,14 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { get } from 'lodash';
 
 import { FormHook, FieldHook, FormData, FieldConfig, FieldsMap, FormConfig } from '../types';
-import { mapFormFields, flattenObject, unflattenObject, Subject, Subscription } from '../lib';
+import {
+  mapFormFields,
+  flattenObject,
+  unflattenObject,
+  Subject,
+  Subscription,
+  filterOutUndefinedValues,
+} from '../lib';
 
 const DEFAULT_ERROR_DISPLAY_TIMEOUT = 500;
 const DEFAULT_OPTIONS = {
@@ -47,9 +54,7 @@ export function useForm<T extends FormData = FormData>(
   const formDefaultValue =
     formConfig.defaultValue === undefined || Object.keys(formConfig.defaultValue).length === 0
       ? {}
-      : Object.entries(formConfig.defaultValue as object)
-          .filter(({ 1: value }) => value !== undefined)
-          .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+      : filterOutUndefinedValues(formConfig.defaultValue);
 
   const formOptions = { ...DEFAULT_OPTIONS, ...options };
   const defaultValueDeserialized = useMemo(() => deserializer(formDefaultValue), [

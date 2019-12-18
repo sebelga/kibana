@@ -43,7 +43,10 @@ export const MappingsEditor = React.memo(
 
     return (
       <IndexSettingsProvider indexSettings={indexSettings}>
-        <MappingsState onUpdate={onUpdate} defaultValue={{ fields: fieldsDefaultValue }}>
+        <MappingsState
+          onUpdate={onUpdate}
+          defaultValue={{ ...configurationDefaultValue, fields: fieldsDefaultValue }}
+        >
           {({ editor: editorType, getProperties }) => {
             const editor =
               editorType === 'json' ? (

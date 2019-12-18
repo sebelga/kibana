@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useReducer, useEffect, createContext, useContext, useMemo } from 'react';
+import React, { useReducer, useEffect, createContext, useContext, useMemo, useRef } from 'react';
 
 import {
   reducer,
@@ -43,11 +43,13 @@ export interface Props {
     editor: FieldsEditor;
     getProperties(): Mappings['properties'];
   }) => React.ReactNode;
-  defaultValue: { fields: { [key: string]: Field } };
+  defaultValue: { fields: { [key: string]: Field }; [key: string]: any };
   onUpdate: OnUpdateHandler;
 }
 
 export const MappingsState = React.memo(({ children, onUpdate, defaultValue }: Props) => {
+  const didMountRef = useRef(false);
+
   const { byId, aliases, rootLevelFields, maxNestedDepth } = useMemo(
     () => normalize(defaultValue.fields),
     [defaultValue.fields]
@@ -137,6 +139,17 @@ export const MappingsState = React.memo(({ children, onUpdate, defaultValue }: P
       isValid: state.isValid,
     });
   }, [state]);
+
+  useEffect(() => {
+    if (didMountRef.current) {
+      dispatch({
+        type: 'editor.replaceMappings',
+        value: { ...defaultValue, fields: { byId, aliases, rootLevelFields, maxNestedDepth } },
+      });
+    } else {
+      didMountRef.current = true;
+    }
+  }, [defaultValue.fields]);
 
   return (
     <StateContext.Provider value={state}>

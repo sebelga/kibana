@@ -4,10 +4,11 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { i18n } from '@kbn/i18n';
 import { EuiConfirmModal, EuiOverlayMask } from '@elastic/eui';
 
+import { JsonEditor, OnUpdateHandler } from '../../../json_editor';
 import { NormalizedField } from '../../types';
 
 type OpenJsonModalFunc = () => void;
@@ -39,6 +40,11 @@ const i18nTexts = {
 
 export const LoadMappingsProvider = ({ onJson, children }: Props) => {
   const [state, setState] = useState<State>({ isModalOpen: false });
+  const jsonContent = useRef<Parameters<OnUpdateHandler>['0'] | undefined>();
+
+  const onJsonUpdate: OnUpdateHandler = jsonUpdateData => {
+    jsonContent.current = jsonUpdateData;
+  };
 
   const openModal: OpenJsonModalFunc = () => {
     setState({ isModalOpen: true });
@@ -49,42 +55,12 @@ export const LoadMappingsProvider = ({ onJson, children }: Props) => {
   };
 
   const loadJson = () => {
-    // Temp dummy object
-    const json: { [key: string]: any } = {
-      _source: {
-        enabled: true,
-        includes: ['hello.*', 'world'],
-        excludes: ['awesome.*'],
-      },
-      numeric_detection: true,
-      date_detection: true,
-      dynamic_date_formats: ['strict_date_optional_time'],
-      dynamic: true,
-      properties: {
-        title: {
-          type: 'text',
-        },
-        other: {
-          type: 'text',
-        },
-        myObject: {
-          type: 'object',
-          properties: {
-            prop1: {
-              type: 'text',
-            },
-            prorp2: {
-              type: 'text',
-            },
-            prop3: {
-              type: 'text',
-            },
-          },
-        },
-      },
-    };
-    onJson(json);
-    closeModal();
+    const isValid = jsonContent.current!.validate();
+
+    if (isValid) {
+      onJson(jsonContent.current!.data.format());
+      closeModal();
+    }
   };
 
   return (
@@ -102,7 +78,11 @@ export const LoadMappingsProvider = ({ onJson, children }: Props) => {
             confirmButtonText={i18nTexts.buttons.confirm}
           >
             <>
-              <p>JSON editor here....</p>
+              <JsonEditor
+                label="JSON mappings to load"
+                helpText="use JSON format"
+                onUpdate={onJsonUpdate}
+              />
             </>
           </EuiConfirmModal>
         </EuiOverlayMask>

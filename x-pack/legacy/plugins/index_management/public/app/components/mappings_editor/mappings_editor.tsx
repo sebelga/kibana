@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { i18n } from '@kbn/i18n';
 import { pick } from 'lodash';
 import { EuiSpacer, EuiTabs, EuiTab } from '@elastic/eui';
@@ -32,14 +32,24 @@ export const MappingsEditor = React.memo(
 
     const { configurationDefaultValue, fieldsDefaultValue } = useMemo(
       () => ({
-        configurationDefaultValue: {
-          ...(pick(defaultValue, CONFIGURATION_FIELDS) as Types['MappingsConfiguration']),
-          _source: defaultValue._source || {},
-        },
+        configurationDefaultValue: pick(
+          defaultValue,
+          CONFIGURATION_FIELDS
+        ) as Types['MappingsConfiguration'],
         fieldsDefaultValue: defaultValue.properties || {},
       }),
       [defaultValue]
     );
+
+    /**
+     * We keep a reference of the configuration form data that we will update
+     * each time we switch tab, from form --> fields.
+     */
+    const configurationFormData = useRef(configurationDefaultValue);
+
+    useEffect(() => {
+      configurationFormData.current = configurationDefaultValue;
+    }, [configurationDefaultValue]);
 
     return (
       <IndexSettingsProvider indexSettings={indexSettings}>
@@ -47,7 +57,7 @@ export const MappingsEditor = React.memo(
           onUpdate={onUpdate}
           defaultValue={{ ...configurationDefaultValue, fields: fieldsDefaultValue }}
         >
-          {({ editor: editorType, getProperties }) => {
+          {({ editor: editorType, getProperties, getConfigurationFormData }) => {
             const editor =
               editorType === 'json' ? (
                 <DocumentFieldsJsonEditor defaultValue={getProperties()} />
@@ -63,13 +73,21 @@ export const MappingsEditor = React.memo(
                   {editor}
                 </>
               ) : (
-                <ConfigurationForm defaultValue={configurationDefaultValue} />
+                <ConfigurationForm defaultValue={configurationFormData.current} />
               );
 
             return (
               <div className="mappingsEditor">
                 <EuiTabs>
-                  <EuiTab onClick={() => selectTab('fields')} isSelected={selectedTab === 'fields'}>
+                  <EuiTab
+                    onClick={() => {
+                      // Make sure to update our reference to the configuration form data
+                      // so we can provided it to the form when navigating to its tab.
+                      configurationFormData.current = getConfigurationFormData();
+                      selectTab('fields');
+                    }}
+                    isSelected={selectedTab === 'fields'}
+                  >
                     {i18n.translate('xpack.idxMgmt.mappingsEditor.fieldsTabLabel', {
                       defaultMessage: 'Mapped fields',
                     })}

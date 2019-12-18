@@ -133,6 +133,6 @@ export const configurationFormSchema: FormSchema<MappingsConfiguration> = {
   },
 };
 
-export const CONFIGURATION_FIELDS = Object.keys(configurationFormSchema).filter(
-  k => k !== '_source'
-);
+// We need to add "dynamic" as this property comes from ES and is needed
+// in our form deserializer() function to calculate the default values of its fields.
+export const CONFIGURATION_FIELDS = [...Object.keys(configurationFormSchema), 'dynamic'];

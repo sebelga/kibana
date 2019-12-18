@@ -42,6 +42,7 @@ export interface Props {
   children: (params: {
     editor: FieldsEditor;
     getProperties(): Mappings['properties'];
+    getConfigurationFormData(): Types['MappingsConfiguration'];
   }) => React.ReactNode;
   defaultValue: { fields: { [key: string]: Field }; [key: string]: any };
   onUpdate: OnUpdateHandler;
@@ -157,6 +158,7 @@ export const MappingsState = React.memo(({ children, onUpdate, defaultValue }: P
         {children({
           editor: state.documentFields.editor,
           getProperties: () => deNormalize(state.fields),
+          getConfigurationFormData: state.configuration.data.format,
         })}
       </DispatchContext.Provider>
     </StateContext.Provider>

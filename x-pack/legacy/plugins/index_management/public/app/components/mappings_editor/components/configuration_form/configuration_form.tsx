@@ -20,13 +20,8 @@ interface Props {
 }
 
 const formSerializer: SerializerFunc<MappingsConfiguration> = formData => {
-  const {
-    enabled: dynamicMappingsEnabled,
-    throwErrorsForUnmappedFields,
-    ...configurationData
-  } = formData;
-
-  const dynamic = dynamicMappingsEnabled ? true : throwErrorsForUnmappedFields ? 'strict' : false;
+  const { enabled, throwErrorsForUnmappedFields, ...configurationData } = formData;
+  const dynamic = enabled ? true : throwErrorsForUnmappedFields ? 'strict' : false;
 
   return {
     ...configurationData,
@@ -34,10 +29,23 @@ const formSerializer: SerializerFunc<MappingsConfiguration> = formData => {
   };
 };
 
+const formDeserializer = (formData: { [key: string]: any }) => {
+  const { dynamic, ...rest } = formData;
+  const throwErrorsForUnmappedFields = dynamic === 'strict';
+  const enabled = dynamic === true || dynamic === undefined;
+
+  return {
+    ...rest,
+    throwErrorsForUnmappedFields,
+    enabled,
+  };
+};
+
 export const ConfigurationForm = React.memo(({ defaultValue }: Props) => {
   const { form } = useForm<MappingsConfiguration>({
     schema: configurationFormSchema,
     serializer: formSerializer,
+    deserializer: formDeserializer,
     defaultValue,
   });
   const dispatch = useDispatch();

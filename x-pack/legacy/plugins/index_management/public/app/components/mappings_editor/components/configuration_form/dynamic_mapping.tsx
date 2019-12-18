@@ -49,7 +49,10 @@ export const DynamicMapping = () => (
   >
     <FormDataProvider pathsToWatch={['enabled', 'date_detection']}>
       {({ enabled, date_detection: dateDetection }) => {
-        // Enabled is true by default
+        if (enabled === undefined) {
+          // If enabled is not yet defined don't go any further.
+          return null;
+        }
         if (enabled) {
           return (
             <>

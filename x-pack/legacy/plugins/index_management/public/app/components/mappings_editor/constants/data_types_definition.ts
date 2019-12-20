@@ -6,7 +6,7 @@
 
 import { i18n } from '@kbn/i18n';
 
-import { MainType, DataType, DataTypeDefinition } from '../types';
+import { MainType, SubType, DataType, DataTypeDefinition } from '../types';
 
 export const TYPE_DEFINITION: { [key in DataType]: DataTypeDefinition } = {
   text: {
@@ -354,3 +354,32 @@ export const MAIN_DATA_TYPE_DEFINITION: {
   }),
   {} as { [key in MainType]: DataTypeDefinition }
 );
+
+/**
+ * Return a map of subType -> mainType
+ *
+ * @example
+ *
+ * {
+ *   long: 'numeric',
+ *   integer: 'numeric',
+ *   short: 'numeric',
+ * }
+ */
+export const SUB_TYPE_MAP_TO_MAIN = Object.entries(MAIN_DATA_TYPE_DEFINITION).reduce(
+  (acc, [type, definition]) => {
+    if ({}.hasOwnProperty.call(definition, 'subTypes')) {
+      definition.subTypes!.types.forEach(subType => {
+        acc[subType] = type;
+      });
+    }
+    return acc;
+  },
+  {} as Record<SubType, string>
+);
+
+// Single source of truth of all the possible data types.
+export const ALL_DATA_TYPES = [
+  ...Object.keys(MAIN_DATA_TYPE_DEFINITION),
+  ...Object.keys(SUB_TYPE_MAP_TO_MAIN),
+];

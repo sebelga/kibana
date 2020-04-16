@@ -8,6 +8,7 @@ import {
   API_REMOTE_CLUSTERS_BASE_PATH,
   API_INDEX_MANAGEMENT_BASE_PATH,
 } from '../../../../common/constants';
+import { getEndpoint } from '../../../../common/routes_endpoints';
 import { arrify } from '../../../../common/services/utils';
 import {
   UIM_FOLLOWER_INDEX_CREATE,
@@ -159,7 +160,9 @@ export const updateFollowerIndex = (id, followerIndex) => {
     readPollTimeout,
   } = followerIndex;
 
-  const request = httpClient.put(`${API_BASE_PATH}/follower_indices/${encodeURIComponent(id)}`, {
+  const { path, method } = getEndpoint('followerIndex', 'edit', { id: encodeURIComponent(id) });
+
+  const request = httpClient[method](path, {
     body: JSON.stringify({
       maxReadRequestOperationCount,
       maxOutstandingReadRequests,

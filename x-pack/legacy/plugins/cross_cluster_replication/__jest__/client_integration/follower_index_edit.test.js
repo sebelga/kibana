@@ -5,8 +5,9 @@
  */
 
 import '../../public/np_ready/app/services/breadcrumbs.mock';
-import { setupEnvironment, pageHelpers, nextTick } from './helpers';
+import { setupEnvironment, pageHelpers, nextTick, getRandomString } from './helpers';
 import { FollowerIndexForm } from '../../public/np_ready/app/components/follower_index_form/follower_index_form';
+import { getEndpoint } from '../../common/routes_endpoints';
 import { FOLLOWER_INDEX_EDIT } from './helpers/constants';
 
 jest.mock('ui/new_platform');
@@ -14,7 +15,7 @@ jest.mock('ui/new_platform');
 const { setup } = pageHelpers.followerIndexEdit;
 const { setup: setupFollowerIndexAdd } = pageHelpers.followerIndexAdd;
 
-describe('Edit Auto-follow pattern', () => {
+describe('Edit follower index', () => {
   let server;
   let httpRequestsMockHelpers;
 
@@ -29,16 +30,16 @@ describe('Edit Auto-follow pattern', () => {
   describe('on component mount', () => {
     let find;
     let component;
+    let waitFor;
 
     const remoteClusters = [{ name: 'new-york', seeds: ['localhost:123'], isConnected: true }];
 
     beforeEach(async () => {
       httpRequestsMockHelpers.setLoadRemoteClustersResponse(remoteClusters);
       httpRequestsMockHelpers.setGetFollowerIndexResponse(FOLLOWER_INDEX_EDIT);
-      ({ component, find } = setup());
+      ({ component, find, waitFor } = setup());
 
-      await nextTick();
-      component.update();
+      await waitFor('followerIndexForm');
     });
 
     /**
@@ -87,6 +88,51 @@ describe('Edit Auto-follow pattern', () => {
           );
         }
       });
+    });
+  });
+
+  describe('payload and API endpoint validation', () => {
+    const remoteClusters = [{ name: 'new-york', seeds: ['localhost:123'], isConnected: true }];
+    let testBed;
+
+    beforeEach(async () => {
+      httpRequestsMockHelpers.setLoadRemoteClustersResponse(remoteClusters);
+      httpRequestsMockHelpers.setGetFollowerIndexResponse(FOLLOWER_INDEX_EDIT);
+
+      testBed = await setup();
+      await testBed.waitFor('followerIndexForm');
+    });
+
+    test('should send the correct payload', async () => {
+      const { actions, form, component, find, waitFor } = testBed;
+      const maxRetryDelay = getRandomString();
+
+      form.setInputValue('maxRetryDelayInput', maxRetryDelay);
+
+      actions.clickSaveForm();
+      component.update(); // The modal to confirm the update opens
+      await waitFor('confirmModalTitleText');
+      find('confirmModalConfirmButton').simulate('click');
+
+      await nextTick(); // Make sure the Request went through
+
+      const { method, path } = getEndpoint('followerIndex', 'edit', {
+        id: FOLLOWER_INDEX_EDIT.name,
+      });
+
+      const expectedBody = { ...FOLLOWER_INDEX_EDIT, maxRetryDelay };
+      delete expectedBody.name;
+      delete expectedBody.remoteCluster;
+      delete expectedBody.leaderIndex;
+      delete expectedBody.status;
+
+      const latestRequest = server.requests[server.requests.length - 1];
+      const requestBody = JSON.parse(JSON.parse(latestRequest.requestBody).body);
+
+      // Validate the API endpoint called: method, path and payload
+      expect(latestRequest.method).toBe(method.toUpperCase());
+      expect(latestRequest.url).toBe(path);
+      expect(requestBody).toEqual(expectedBody);
     });
   });
 

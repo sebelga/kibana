@@ -4,6 +4,7 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
+import { getEndpoint } from '../../../../../legacy/plugins/cross_cluster_replication/common/routes_endpoints';
 import { API_BASE_PATH } from './constants';
 import { getRandomString } from './lib';
 import { getFollowerIndexPayload } from './fixtures';
@@ -62,11 +63,13 @@ export const registerHelpers = supertest => {
       .send({ ...payload, name });
   };
 
-  const updateFollowerIndex = (name, payload) =>
-    supertest
-      .put(`${API_BASE_PATH}/follower_indices/${name}`)
+  const updateFollowerIndex = (name, payload) => {
+    const { method, path } = getEndpoint('followerIndex', 'edit', { id: name });
+
+    return supertest[method](path)
       .set('kbn-xsrf', 'xxx')
       .send(payload);
+  };
 
   const unfollowLeaderIndex = followerIndex => {
     const followerIndices = Array.isArray(followerIndex) ? followerIndex : [followerIndex];

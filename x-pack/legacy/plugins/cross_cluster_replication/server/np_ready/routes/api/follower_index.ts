@@ -21,6 +21,34 @@ import { licensePreRoutingFactory } from '../../lib/license_pre_routing_factory'
 import { RouteDependencies } from '../types';
 import { mapErrorToKibanaHttpResponse } from '../map_to_kibana_http_error';
 
+// ------------------
+// Validation schemas
+// ------------------
+const advancedSettings = {
+  maxReadRequestOperationCount: schema.maybe(schema.number()),
+  maxOutstandingReadRequests: schema.maybe(schema.number()),
+  maxReadRequestSize: schema.maybe(schema.string()), // byte value
+  maxWriteRequestOperationCount: schema.maybe(schema.number()),
+  maxWriteRequestSize: schema.maybe(schema.string()), // byte value
+  maxOutstandingWriteRequests: schema.maybe(schema.number()),
+  maxWriteBufferCount: schema.maybe(schema.number()),
+  maxWriteBufferSize: schema.maybe(schema.string()), // byte value
+  maxRetryDelay: schema.maybe(schema.string()), // time value
+  readPollTimeout: schema.maybe(schema.string()), // time value
+};
+
+const basicSettingsSchema = {
+  name: schema.string(),
+  remoteCluster: schema.string(),
+  leaderIndex: schema.string(),
+};
+
+const followerIndexSchema = schema.object({ ...basicSettingsSchema, ...advancedSettings });
+const advancedSettingsSchema = schema.object({ ...advancedSettings });
+
+// ------------------
+// Routes definition
+// ------------------
 export const registerFollowerIndexRoutes = ({ router, __LEGACY }: RouteDependencies) => {
   /**
    * Returns a list of all follower indices
@@ -130,12 +158,7 @@ export const registerFollowerIndexRoutes = ({ router, __LEGACY }: RouteDependenc
     {
       path: `${API_BASE_PATH}/follower_indices`,
       validate: {
-        body: schema.object(
-          {
-            name: schema.string(),
-          },
-          { unknowns: 'allow' }
-        ),
+        body: followerIndexSchema,
       },
     },
     licensePreRoutingFactory({
@@ -164,18 +187,7 @@ export const registerFollowerIndexRoutes = ({ router, __LEGACY }: RouteDependenc
       path: `${API_BASE_PATH}/follower_indices/{id}`,
       validate: {
         params: schema.object({ id: schema.string() }),
-        body: schema.object({
-          maxReadRequestOperationCount: schema.maybe(schema.number()),
-          maxOutstandingReadRequests: schema.maybe(schema.number()),
-          maxReadRequestSize: schema.maybe(schema.string()), // byte value
-          maxWriteRequestOperationCount: schema.maybe(schema.number()),
-          maxWriteRequestSize: schema.maybe(schema.string()), // byte value
-          maxOutstandingWriteRequests: schema.maybe(schema.number()),
-          maxWriteBufferCount: schema.maybe(schema.number()),
-          maxWriteBufferSize: schema.maybe(schema.string()), // byte value
-          maxRetryDelay: schema.maybe(schema.string()), // time value
-          readPollTimeout: schema.maybe(schema.string()), // time value
-        }),
+        body: advancedSettingsSchema,
       },
     },
     licensePreRoutingFactory({

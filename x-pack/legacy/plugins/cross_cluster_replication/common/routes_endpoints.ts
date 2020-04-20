@@ -11,48 +11,72 @@
  * --------------------------------------------------------
  */
 
+// Reusable lib accross our apps
+import { EndpointDefinition, createEndPointsGetter } from './my_lib';
+
 import { API_BASE_PATH } from './constants';
-
-type Section = 'followerIndex';
-type Method = 'get' | 'post' | 'put' | 'delete' | 'head';
-
-interface EndpointDefinition {
-  method: Method;
-  path: string;
-}
 
 // Follower indices
 const followerIndexEndpoints = {
+  list: {
+    method: 'get',
+    path: `${API_BASE_PATH}/follower_indices`,
+  } as EndpointDefinition,
+  get: {
+    method: 'get',
+    path: `${API_BASE_PATH}/follower_indices/{id}`,
+  } as EndpointDefinition,
+  create: {
+    method: 'post',
+    path: `${API_BASE_PATH}/follower_indices`,
+  } as EndpointDefinition,
   edit: {
     method: 'put',
     path: `${API_BASE_PATH}/follower_indices/{id}`,
   } as EndpointDefinition,
+  delete: {
+    method: 'delete',
+    path: `${API_BASE_PATH}/follower_indices/{id}`,
+  } as EndpointDefinition,
 };
 
-// TODO: Add autoFollowPatternEndpoints & ccrEndpoints
+const autoFollowPatternEndpoints = {
+  list: {
+    method: 'get',
+    path: `${API_BASE_PATH}/auto-follow-patterns`,
+  } as EndpointDefinition,
+  get: {
+    method: 'get',
+    path: `${API_BASE_PATH}/auto-follow-patterns/{id}`,
+  } as EndpointDefinition,
+  create: {
+    method: 'post',
+    path: `${API_BASE_PATH}/auto-follow-patterns`,
+  } as EndpointDefinition,
+  edit: {
+    method: 'put',
+    path: `${API_BASE_PATH}/auto-follow-patterns/{id}`,
+  } as EndpointDefinition,
+  delete: {
+    method: 'delete',
+    path: `${API_BASE_PATH}/auto-follow-patterns/{id}`,
+  } as EndpointDefinition,
+  pause: {
+    method: 'post',
+    path: `${API_BASE_PATH}/auto-follow-patterns/{id}/pause`,
+  } as EndpointDefinition,
+  resume: {
+    method: 'post',
+    path: `${API_BASE_PATH}/auto-follow-patterns/{id}/resume`,
+  } as EndpointDefinition,
+};
 
+// Redux like reducer composition
 const ccrRoutesEndpoints = {
   followerIndex: followerIndexEndpoints,
+  autoFollowPattern: autoFollowPatternEndpoints,
 };
 
-type CcrRoutesEndPoints = typeof ccrRoutesEndpoints;
-
-const replacePlaceholders = (path: string, data: { [key: string]: any }): string =>
-  Object.entries(data).reduce((updatedPath, [key, value]) => {
-    const regEx = new RegExp(`{${key}}`);
-    return updatedPath.replace(regEx, value);
-  }, path);
-
-export const getEndpoint = <S extends Section, E extends keyof CcrRoutesEndPoints[S]>(
-  section: S,
-  endpoint: E,
-  data?: { [key: string]: any }
-): EndpointDefinition => {
-  const endpointDefinition = (ccrRoutesEndpoints[section][
-    endpoint
-  ] as unknown) as EndpointDefinition;
-
-  return data
-    ? { ...endpointDefinition, path: replacePlaceholders(endpointDefinition.path, data) } // Replace placeholders with data
-    : endpointDefinition;
+export const endPoints = {
+  get: createEndPointsGetter(ccrRoutesEndpoints),
 };

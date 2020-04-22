@@ -7,7 +7,7 @@
 import '../../public/np_ready/app/services/breadcrumbs.mock';
 import { setupEnvironment, pageHelpers, nextTick, getRandomString } from './helpers';
 import { FollowerIndexForm } from '../../public/np_ready/app/components/follower_index_form/follower_index_form';
-import { getEndpoint } from '../../common/routes_endpoints';
+import { endPoints } from '../../common/routes_endpoints';
 import { FOLLOWER_INDEX_EDIT } from './helpers/constants';
 
 jest.mock('ui/new_platform');
@@ -116,9 +116,12 @@ describe('Edit follower index', () => {
 
       await nextTick(); // Make sure the Request went through
 
-      const { method, path } = getEndpoint('followerIndex', 'edit', {
+      const { method, path } = endPoints.get('followerIndex', 'edit', {
         id: FOLLOWER_INDEX_EDIT.name,
       });
+
+      // const path = `${API_BASE_PATH}/follower_indices/${FOLLOWER_INDEX_EDIT.name}`;
+      // const method = 'post';
 
       const expectedBody = { ...FOLLOWER_INDEX_EDIT, maxRetryDelay };
       delete expectedBody.name;

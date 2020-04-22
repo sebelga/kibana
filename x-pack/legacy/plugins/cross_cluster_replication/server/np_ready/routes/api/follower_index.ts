@@ -12,7 +12,7 @@ import {
   // @ts-ignore
 } from '../../../../common/services/follower_index_serialization';
 import { API_BASE_PATH } from '../../../../common/constants';
-import { getEndpoint } from '../../../../common/routes_endpoints';
+import { endPoints } from '../../../../common/routes_endpoints';
 // @ts-ignore
 import { removeEmptyFields } from '../../../../common/services/utils';
 // @ts-ignore
@@ -185,7 +185,7 @@ export const registerFollowerIndexRoutes = ({ router, __LEGACY }: RouteDependenc
    */
   router.put(
     {
-      path: getEndpoint('followerIndex', 'edit').path,
+      path: endPoints.get('autoFollowPattern', 'delete').path,
       validate: {
         params: schema.object({ id: schema.string() }),
         body: advancedSettingsSchema,

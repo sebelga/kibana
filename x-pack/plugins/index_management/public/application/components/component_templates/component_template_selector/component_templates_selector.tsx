@@ -11,7 +11,7 @@ import { FormattedMessage } from '@kbn/i18n/react';
 import { i18n } from '@kbn/i18n';
 
 import { ComponentTemplateListItem } from '../../../../../common';
-import { SectionError, SectionLoading } from '../shared_imports';
+import { SectionError, SectionLoading, FlyoutMultiContent } from '../shared_imports';
 import { ComponentTemplateDetailsFlyout } from '../component_template_details';
 import { CreateButtonPopOver } from './components';
 import { ComponentTemplates } from './component_templates';
@@ -19,6 +19,8 @@ import { ComponentTemplatesSelection } from './component_templates_selection';
 import { useApi } from '../component_templates_context';
 
 import './component_templates_selector.scss';
+
+const { useFlyoutMultiContent } = FlyoutMultiContent;
 
 interface Props {
   onChange: (components: string[]) => void;
@@ -53,6 +55,7 @@ export const ComponentTemplatesSelector = ({
   emptyPrompt: { text, showCreateButton } = {},
 }: Props) => {
   const { data: components, isLoading, error } = useApi().useLoadComponentTemplates();
+  const { addContent, closeFlyout } = useFlyoutMultiContent();
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [componentsSelected, setComponentsSelected] = useState<ComponentTemplateListItem[]>([]);
   const isInitialized = useRef(false);
@@ -88,6 +91,22 @@ export const ComponentTemplatesSelector = ({
       onComponentsLoaded(components ?? []);
     }
   }, [isLoading, error, components, onComponentsLoaded]);
+
+  useEffect(() => {
+    if (!selectedComponent) {
+      closeFlyout();
+      return;
+    }
+
+    addContent({
+      id: 'componentTemplateDetails',
+      Component: ComponentTemplateDetailsFlyout,
+      props: {
+        onClose: () => setSelectedComponent(null),
+        componentTemplateName: selectedComponent,
+      },
+    });
+  }, [selectedComponent, closeFlyout, addContent]);
 
   const onSelectionReorder = (reorderedComponents: ComponentTemplateListItem[]) => {
     setComponentsSelected(reorderedComponents);
@@ -199,30 +218,27 @@ export const ComponentTemplatesSelector = ({
     </EuiFlexGroup>
   );
 
-  const renderComponentDetails = () => {
-    if (!selectedComponent) {
-      return null;
-    }
+  // const renderComponentDetails = () => {
+  //   if (!selectedComponent) {
+  //     return null;
+  //   }
 
-    return (
-      <ComponentTemplateDetailsFlyout
-        onClose={() => setSelectedComponent(null)}
-        componentTemplateName={selectedComponent}
-      />
-    );
-  };
+  //   FlyoutMultiContent;
+
+  //   return (
+  //     <ComponentTemplateDetailsFlyout
+  //       onClose={() => setSelectedComponent(null)}
+  //       componentTemplateName={selectedComponent}
+  //     />
+  //   );
+  // };
 
   if (isLoading) {
     return renderLoading();
   } else if (error) {
     return renderError();
   } else if (hasComponents) {
-    return (
-      <>
-        {renderSelector()}
-        {renderComponentDetails()}
-      </>
-    );
+    return <>{renderSelector()}</>;
   }
 
   // No components: render empty prompt

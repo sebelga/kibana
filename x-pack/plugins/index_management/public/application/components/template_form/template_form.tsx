@@ -9,7 +9,7 @@ import { FormattedMessage } from '@kbn/i18n/react';
 import { EuiSpacer, EuiButton } from '@elastic/eui';
 
 import { TemplateDeserialized } from '../../../../common';
-import { serializers, Forms } from '../../../shared_imports';
+import { serializers, Forms, FlyoutMultiContent } from '../../../shared_imports';
 import { SectionError } from '../section_error';
 import { SimulateTemplateFlyout } from '../index_templates';
 import { StepLogisticsContainer, StepComponentContainer, StepReviewContainer } from './steps';
@@ -23,6 +23,7 @@ import { documentationService } from '../../services/documentation';
 
 const { stripEmptyFields } = serializers;
 const { FormWizard, FormWizardStep } = Forms;
+const { useFlyoutMultiContent } = FlyoutMultiContent;
 
 interface Props {
   title: string | JSX.Element;
@@ -91,8 +92,8 @@ export const TemplateForm = ({
   clearSaveError,
   onSave,
 }: Props) => {
-  const [isSimulateVisible, setIsSimulateVisible] = useState(false);
   const [wizardContent, setWizardContent] = useState<Forms.Content<WizardContent> | null>(null);
+  const { addContent, closeFlyout } = useFlyoutMultiContent();
 
   const indexTemplate = defaultValue ?? {
     name: '',
@@ -150,6 +151,17 @@ export const TemplateForm = ({
     </>
   ) : null;
 
+  const showPreviewFlyout = () => {
+    addContent({
+      id: 'previewTemplate',
+      Component: SimulateTemplateFlyout,
+      props: {
+        getTemplate: getTemplateSimulate,
+        onClose: closeFlyout,
+      },
+    });
+  };
+
   const getRightContentWizardNav = (stepId: WizardSection) => {
     if (isLegacy) {
       return null;
@@ -161,7 +173,7 @@ export const TemplateForm = ({
     }
 
     return (
-      <EuiButton size="s" onClick={() => setIsSimulateVisible(true)}>
+      <EuiButton size="s" onClick={showPreviewFlyout}>
         <FormattedMessage
           id="xpack.idxMgmt.templateForm.previewIndexTemplateButtonLabel"
           defaultMessage="Preview index template"
@@ -299,14 +311,6 @@ export const TemplateForm = ({
           <StepReviewContainer getTemplateData={buildTemplateObject(indexTemplate)} />
         </FormWizardStep>
       </FormWizard>
-
-      {/* Simulate index template */}
-      {isSimulateVisible && (
-        <SimulateTemplateFlyout
-          getTemplate={getTemplateSimulate}
-          onClose={() => setIsSimulateVisible(false)}
-        />
-      )}
     </>
   );
 };

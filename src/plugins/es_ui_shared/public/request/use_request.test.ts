@@ -236,7 +236,7 @@ describe('useRequest hook', () => {
         // because we want to assert against the hook state while the Promise is pending.
 
         const { setupSuccessRequest, advanceTime, hookResult, getSendRequestSpy } = helpers;
-        const DOUBLE_REQUEST_TIME = REQUEST_TIME * 2;
+        const DOUBLE_REQUEST_TIME = REQUEST_TIME * 2 + 50; // We add 50 to avoid a race condition
         setupSuccessRequest({ pollIntervalMs: DOUBLE_REQUEST_TIME });
 
         // The initial request resolves, and then we'll immediately send a new one manually...
@@ -253,7 +253,7 @@ describe('useRequest hook', () => {
           hookResult.sendRequest();
         });
 
-        // At this point, we've moved forward 3s. The poll is set at 2s. If sendRequest didn't
+        // At this point, we've moved forward 3000 ms. The poll is set at 2050s. If sendRequest didn't
         // reset the poll, the request call count would be 4, not 3.
         await advanceTime(REQUEST_TIME);
         expect(getSendRequestSpy().callCount).toBe(3);

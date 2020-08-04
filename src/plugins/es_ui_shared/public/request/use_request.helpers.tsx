@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { act } from 'react-dom/test-utils';
 import { mount, ReactWrapper } from 'enzyme';
 import sinon from 'sinon';
@@ -86,40 +86,50 @@ export const createUseRequestHelpers = (): UseRequestHelpers => {
   const hookResult = {} as UseRequestResponse;
   const sendRequestSpy = sinon.stub();
 
-  const setupUseRequest = (config: SendRequestConfig) => {
-    const httpClient = {
-      post: (path: string, options: HttpFetchOptions) => {
-        return new Promise((resolve, reject) => {
-          // Increase the time it takes to resolve a request so we have time to inspect the hook
-          // as it goes through various states.
-          setTimeout(() => {
-            try {
-              resolve(sendRequestSpy(path, options));
-            } catch (e) {
-              reject(e);
-            }
-          }, REQUEST_TIME);
-        });
-      },
-    };
+  const httpClient = {
+    post: (path: string, options: HttpFetchOptions) => {
+      return new Promise((resolve, reject) => {
+        // Increase the time it takes to resolve a request so we have time to inspect the hook
+        // as it goes through various states.
+        setTimeout(() => {
+          try {
+            resolve(sendRequestSpy(path, options));
+          } catch (e) {
+            reject(e);
+          }
+        }, REQUEST_TIME);
+      });
+    },
+  };
 
-    const TestComponent = ({ requestConfig }: { requestConfig: SendRequestConfig }) => {
-      const { isInitialRequest, isLoading, error, data, sendRequest } = useRequest(
-        httpClient as HttpSetup,
-        requestConfig
-      );
+  const setupUseRequest = (
+    config: SendRequestConfig,
+    onChange: (hookData: UseRequestResponse) => void = (hookData) => {
+      hookResult.isInitialRequest = hookData.isInitialRequest;
+      hookResult.isLoading = hookData.isLoading;
+      hookResult.error = hookData.error;
+      hookResult.data = hookData.data;
+      hookResult.sendRequest = hookData.sendRequest;
+    }
+  ) => {
+    const TestComponent = ({
+      requestConfig,
+      onHookChange,
+    }: {
+      requestConfig: SendRequestConfig;
+      onHookChange: (hookData: UseRequestResponse) => void;
+    }) => {
+      const hookData = useRequest(httpClient as HttpSetup, requestConfig);
 
-      hookResult.isInitialRequest = isInitialRequest;
-      hookResult.isLoading = isLoading;
-      hookResult.error = error;
-      hookResult.data = data;
-      hookResult.sendRequest = sendRequest;
+      useEffect(() => {
+        onHookChange(hookData);
+      }, [hookData, onHookChange]);
 
       return null;
     };
 
     act(() => {
-      element = mount(<TestComponent requestConfig={config} />);
+      element = mount(<TestComponent requestConfig={config} onHookChange={onChange} />);
     });
   };
 

@@ -61,7 +61,8 @@ export const useRequest = <D = any, E = Error>(
   const [data, setData] = useState<any>(initialData);
 
   // Consumers can use isInitialRequest to implement a polling UX.
-  const [isInitialRequest, setIsInitialRequest] = useState<boolean>(true);
+  const [totalRequests, setTotalRequests] = useState(0);
+  const isInitialRequest = totalRequests === 0;
 
   // Convert our object to string to be able to compare them in our useMemo
   // This allows the consumer to freely passed new objects to the hook on each
@@ -99,7 +100,7 @@ export const useRequest = <D = any, E = Error>(
     }
 
     setIsLoading(false);
-    setIsInitialRequest(false);
+    setTotalRequests((prev) => prev + 1);
 
     setError(responseError);
     // If there's an error, keep the data from the last request in case it's still useful to the user.
@@ -114,10 +115,12 @@ export const useRequest = <D = any, E = Error>(
   }, [requestBody, httpClient, deserializer, cleanUpPollInterval]);
 
   const scheduleRequest = useCallback(() => {
+    cleanUpPollInterval();
+
     if (pollIntervalMs) {
       pollIntervalIdRef.current = setTimeout(sendRequest, pollIntervalMs);
     }
-  }, [pollIntervalMs, sendRequest]);
+  }, [pollIntervalMs, sendRequest, cleanUpPollInterval]);
 
   useEffect(() => {
     sendRequest();
@@ -130,7 +133,7 @@ export const useRequest = <D = any, E = Error>(
     return cleanUpPollInterval;
   }, [scheduleRequest, cleanUpPollInterval]);
 
-  // Whenever the data state changes (this means a previous request has fulfilled),
+  // Whenever the totalRequests state changes
   // we schedule a new request
   useEffect(() => {
     if (isMounted.current === false) {
@@ -140,7 +143,7 @@ export const useRequest = <D = any, E = Error>(
 
     scheduleRequest();
     return cleanUpPollInterval;
-  }, [data, scheduleRequest, cleanUpPollInterval]);
+  }, [totalRequests, scheduleRequest, cleanUpPollInterval]);
 
   useEffect(() => {
     isMounted.current = true;

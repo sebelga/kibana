@@ -82,6 +82,7 @@ export const useRequest = <D = any, E = Error>(
   const cleanUpPollInterval = useCallback(() => {
     if (pollIntervalIdRef.current) {
       clearTimeout(pollIntervalIdRef.current);
+      pollIntervalIdRef.current = null;
     }
   }, []);
 
@@ -122,19 +123,14 @@ export const useRequest = <D = any, E = Error>(
     }
   }, [pollIntervalMs, sendRequest, cleanUpPollInterval]);
 
+  // Send the request on component mount
+  // + anytime the deps of sendRequest() change
   useEffect(() => {
     sendRequest();
   }, [sendRequest]);
 
-  // Whenever the scheduleRequest() changes (which changes when the pollIntervalMs changes)
-  // we schedule a new request
-  useEffect(() => {
-    scheduleRequest();
-    return cleanUpPollInterval;
-  }, [scheduleRequest, cleanUpPollInterval]);
-
-  // Whenever the totalRequests state changes
-  // we schedule a new request
+  // Schedule a new request each time a request fulfills ("totalRequests" increment)
+  // + anytime the deps of scheduleRequest() change
   useEffect(() => {
     if (isMounted.current === false) {
       // Don't schedule on component mount
@@ -150,10 +146,8 @@ export const useRequest = <D = any, E = Error>(
 
     return () => {
       isMounted.current = false;
-      // When the component unmounts, clear any existing interval.
-      cleanUpPollInterval();
     };
-  }, [cleanUpPollInterval]);
+  }, []);
 
   return {
     isInitialRequest,

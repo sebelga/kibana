@@ -47,10 +47,11 @@ describe('useRequest hook', () => {
         await advanceTime(REQUEST_TIME);
         expect(getSendRequestSpy().callCount).toBe(1);
 
-        await advanceTime(REQUEST_TIME);
+        // We need to advance (1) the pollIntervalMs and (2) the request time
+        await advanceTime(REQUEST_TIME * 2);
         expect(getSendRequestSpy().callCount).toBe(2);
 
-        await advanceTime(REQUEST_TIME);
+        await advanceTime(REQUEST_TIME * 2);
         expect(getSendRequestSpy().callCount).toBe(3);
       });
     });

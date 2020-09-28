@@ -17,16 +17,23 @@ export {
 } from '../../../../src/plugins/es_ui_shared/public';
 
 export {
-  FormSchema,
   FIELD_TYPES,
   VALIDATION_TYPES,
+  FieldHook,
   FieldConfig,
   useForm,
   useFormData,
   Form,
+  FormSchema,
   getUseField,
   UseField,
+  UseArray,
   FormDataProvider,
+  FormConfig,
+  OnUpdateHandler,
+  OnFormUpdateArg,
+  ValidationFunc,
+  SerializerFunc,
 } from '../../../../src/plugins/es_ui_shared/static/forms/hook_form_lib';
 
 export {
@@ -40,6 +47,11 @@ export {
   Field,
   ToggleField,
   JsonEditorField,
+  ComboBoxField,
+  TextField,
+  SelectField,
+  NumericField,
+  CheckBoxField,
 } from '../../../../src/plugins/es_ui_shared/static/forms/components';
 
 export { isJSON } from '../../../../src/plugins/es_ui_shared/static/validators/string';

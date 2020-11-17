@@ -22,13 +22,16 @@ import { MultiContentProvider } from './multi_content_context';
 import { HookProps } from './use_multi_content';
 
 /**
- * HOC to wrap a component with the MultiContentProvider
+ * HOC to wrap a component with the MultiContentProvider.
+ *
+ * You can provide the Props of the wrapped component in the generic as so:
+ * WithMultiContent<Props>(WrappedComponent)
  *
  * @param Component The component to wrap with the MultiContentProvider
  */
-export function WithMultiContent<
-  P extends object = { [key: string]: any } // The Props for the wrapped component
->(Component: React.FunctionComponent<P & HookProps<any>>) {
+export function WithMultiContent<P extends object = { [key: string]: any }>(
+  Component: React.FunctionComponent<P & HookProps<any>>
+) {
   return function <T extends object = { [key: string]: any }>(props: P & HookProps<T>) {
     const { defaultValue, onChange, ...rest } = props;
     return (

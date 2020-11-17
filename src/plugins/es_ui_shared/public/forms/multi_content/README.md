@@ -124,7 +124,7 @@ const ContentOneContainer = () => {
 
   // Declare a new content and get its default Value + a handler to update the content in the multi-content
   // This will update the "contentOne" slice of the multi-content.
-  const { defaultValue, updateContent } = useContent<MyMultiContent>('contentOne');
+  const { defaultValue, updateContent } = useContent<MyMultiContent, 'contentOne'>('contentOne');
 
   return <ContentOne defaultValue={defaultValue} onChange={updateContent} />
 };

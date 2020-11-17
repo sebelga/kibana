@@ -65,7 +65,7 @@ export function useContent<T extends object, K extends keyof T>(contentId: K) {
   } = useMultiContentContext<T>();
 
   const updateContent = useCallback(
-    (content: Content) => {
+    (content: Content<T[K]>) => {
       updateContentAt(contentId, content);
     },
     [contentId, updateContentAt]

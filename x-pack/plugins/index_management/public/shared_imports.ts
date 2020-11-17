@@ -41,6 +41,7 @@ export {
   Field,
   ToggleField,
   JsonEditorField,
+  TextField,
 } from '../../../../src/plugins/es_ui_shared/static/forms/components';
 
 export { isJSON } from '../../../../src/plugins/es_ui_shared/static/validators/string';

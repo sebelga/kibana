@@ -24,6 +24,7 @@ import { IndexList } from './index_list';
 import { TemplateList } from './template_list';
 import { ComponentTemplateList } from '../../components/component_templates';
 import { breadcrumbService } from '../../services/breadcrumbs';
+import { ComplexForm } from './poc-multi-content';
 
 export enum Section {
   Indices = 'indices',
@@ -143,7 +144,7 @@ export const IndexManagementHome: React.FunctionComponent<RouteComponentProps<Ma
             path={[`/${Section.DataStreams}`, `/${Section.DataStreams}/:dataStreamName?`]}
             component={DataStreamList}
           />
-          <Route exact path={`/${Section.Indices}`} component={IndexList} />
+          <Route exact path={`/${Section.Indices}`} component={ComplexForm} />
           <Route
             exact
             path={[`/${Section.IndexTemplates}`, `/${Section.IndexTemplates}/:templateName?`]}

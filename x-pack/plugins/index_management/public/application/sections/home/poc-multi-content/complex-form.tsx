@@ -64,7 +64,9 @@ export const ComplexForm = ({ complexObject }: Props) => {
             <>
               <HotContainer />
               <EuiSpacer size="l" />
-              <EuiButton onClick={saveForm}>Save form</EuiButton>
+              <EuiButton onClick={saveForm} fill>
+                Save form
+              </EuiButton>
             </>
           );
         }}

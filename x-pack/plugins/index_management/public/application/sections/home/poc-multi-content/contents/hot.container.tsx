@@ -5,7 +5,7 @@
  */
 import React from 'react';
 
-import { Forms } from '../../../../shared_imports';
+import { Forms } from '../../../../../shared_imports';
 import { FormContents } from './complex-form';
 import { Hot } from './hot';
 
@@ -20,7 +20,7 @@ export const HotContainer = () => {
     <Hot
       defaultValue={defaultValue}
       onChange={updateContent}
-      getHotAdvancedValue={() => getSingleContentData('hotAdvanced')}
+      getHotAdvancedSettings={() => getSingleContentData('hotAdvanced')}
     />
   );
 };

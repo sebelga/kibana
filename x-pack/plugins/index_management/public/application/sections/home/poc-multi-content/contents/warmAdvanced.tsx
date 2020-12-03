@@ -12,20 +12,20 @@ import {
   UseField,
   ToggleField,
   Forms,
-} from '../../../../shared_imports';
+} from '../../../../../shared_imports';
 
-export interface HotAdvancedForm {
+export interface WarmAdvancedForm {
   merge: boolean;
 }
 
 interface Props {
-  onChange: (content: Forms.Content<HotAdvancedForm>) => void;
-  defaultValue?: HotAdvancedForm;
+  onChange: (content: Forms.Content<WarmAdvancedForm>) => void;
+  defaultValue?: WarmAdvancedForm;
 }
 
-export const HotAdvanced = ({ defaultValue, onChange }: Props) => {
-  const { form } = useForm<HotAdvancedForm>({ defaultValue });
-  const [, getData] = useFormData<HotAdvancedForm>({ form });
+export const WarmAdvanced = ({ defaultValue, onChange }: Props) => {
+  const { form } = useForm<WarmAdvancedForm>({ defaultValue });
+  const [, getData] = useFormData<WarmAdvancedForm>({ form });
   const { isValid, validate } = form;
 
   useEffect(() => {

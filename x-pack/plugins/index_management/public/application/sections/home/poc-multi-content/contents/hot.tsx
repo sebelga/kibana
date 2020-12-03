@@ -4,9 +4,16 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import React, { useState, useEffect } from 'react';
-import { EuiSpacer, EuiButton } from '@elastic/eui';
+import { EuiTitle, EuiSpacer, EuiButton } from '@elastic/eui';
 
-import { Form, useForm, useFormData, UseField, TextField, Forms } from '../../../../shared_imports';
+import {
+  Form,
+  useForm,
+  useFormData,
+  UseField,
+  TextField,
+  Forms,
+} from '../../../../../shared_imports';
 import { HotAdvancedContainer } from './hotAdvanced.container';
 import { HotAdvancedForm } from './hotAdvanced';
 
@@ -17,10 +24,10 @@ export interface HotForm {
 interface Props {
   onChange: (content: Forms.Content<HotForm>) => void;
   defaultValue?: HotForm;
-  getHotAdvancedValue: () => HotAdvancedForm;
+  getHotAdvancedSettings: () => HotAdvancedForm;
 }
 
-export const Hot = ({ defaultValue, onChange, getHotAdvancedValue }: Props) => {
+export const Hot = ({ defaultValue, onChange, getHotAdvancedSettings }: Props) => {
   const { form } = useForm<HotForm>({ defaultValue });
   const [, getData] = useFormData<HotForm>({ form });
   const { isValid, validate } = form;
@@ -32,6 +39,12 @@ export const Hot = ({ defaultValue, onChange, getHotAdvancedValue }: Props) => {
 
   return (
     <Form form={form}>
+      <EuiTitle size="l">
+        <h2>Hot section</h2>
+      </EuiTitle>
+
+      <EuiSpacer />
+
       <UseField path="name" component={TextField} />
 
       <EuiSpacer />
@@ -42,7 +55,7 @@ export const Hot = ({ defaultValue, onChange, getHotAdvancedValue }: Props) => {
 
       <EuiSpacer />
 
-      {!isHotConfigVisible && <div>{JSON.stringify(getHotAdvancedValue())}</div>}
+      {!isHotConfigVisible && <div>{JSON.stringify(getHotAdvancedSettings())}</div>}
       {isHotConfigVisible && <HotAdvancedContainer />}
     </Form>
   );

@@ -4,26 +4,26 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 import React, { useMemo } from 'react';
-import { EuiButton, EuiSpacer } from '@elastic/eui';
+import { EuiButton, EuiSpacer, EuiHorizontalRule } from '@elastic/eui';
 
 import { Forms } from '../../../../shared_imports';
 
-import { HotContainer } from './hot.container';
-import { HotForm } from './hot';
-import { HotAdvancedForm } from './hotAdvanced';
+import {
+  HotContainer,
+  WarmContainer,
+  HotForm,
+  HotAdvancedForm,
+  WarmForm,
+  WarmAdvancedForm,
+} from './contents';
 
 const { MultiContentProvider, MultiContentConsumer } = Forms;
 
 export interface FormContents {
   hot: HotForm;
   hotAdvanced: HotAdvancedForm;
-  warm: {
-    name: string;
-  };
-  warmAdvanced: {
-    merge: boolean;
-    numSegments: number;
-  };
+  warm: WarmForm;
+  warmAdvanced: warmAdvancedForm;
 }
 
 interface Props {
@@ -35,17 +35,16 @@ export const ComplexForm = ({ complexObject }: Props) => {
     // Parse the complex object and return it into "chunks"
     return {
       hot: {
-        name: 'Test value',
+        name: 'Initial hot value',
       },
       hotAdvanced: {
         merge: true,
       },
       warm: {
-        name: 'Another value',
+        name: 'Initial warm value',
       },
       warmAdvanced: {
         merge: false,
-        numSegments: 2,
       },
     };
   }, [complexObject]); // eslint-disable-line
@@ -63,6 +62,11 @@ export const ComplexForm = ({ complexObject }: Props) => {
           return (
             <>
               <HotContainer />
+
+              <EuiHorizontalRule />
+
+              <WarmContainer />
+
               <EuiSpacer size="l" />
               <EuiButton onClick={saveForm} fill>
                 Save form

@@ -5,8 +5,8 @@
  */
 import React from 'react';
 
-import { Forms } from '../../../../shared_imports';
-import { FormContents } from './complex-form';
+import { Forms } from '../../../../../shared_imports';
+import { FormContents } from '../complex-form';
 import { HotAdvanced } from './hotAdvanced';
 
 const { useContent } = Forms;

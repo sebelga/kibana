@@ -101,7 +101,7 @@ export const IndexManagementHome: React.FunctionComponent<RouteComponentProps<Ma
               <h1 data-test-subj="appTitle">
                 <FormattedMessage
                   id="xpack.idxMgmt.home.appTitle"
-                  defaultMessage="Index Management"
+                  defaultMessage="POC multi-content"
                 />
               </h1>
             </EuiFlexItem>

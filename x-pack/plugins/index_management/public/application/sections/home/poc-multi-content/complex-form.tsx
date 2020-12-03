@@ -23,7 +23,7 @@ export interface FormContents {
   hot: HotForm;
   hotAdvanced: HotAdvancedForm;
   warm: WarmForm;
-  warmAdvanced: warmAdvancedForm;
+  warmAdvanced: WarmAdvancedForm;
 }
 
 interface Props {

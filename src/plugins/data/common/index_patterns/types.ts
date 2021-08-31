@@ -17,7 +17,10 @@ import { FieldFormat } from '../../../field_formats/common';
 
 export type FieldFormatMap = Record<string, SerializedFieldFormat>;
 
-export type RuntimeType = estypes.MappingRuntimeFieldType | 'composite';
+type CompositeRuntimeType = 'composite';
+type SimpleRuntimeType = estypes.MappingRuntimeFieldType;
+
+export type RuntimeType = SimpleRuntimeType | CompositeRuntimeType;
 
 /**
  * The RuntimeField that will be sent in the ES Query "runtime_mappings" object
@@ -35,15 +38,27 @@ export interface ESRuntimeField extends Omit<estypes.MappingRuntimeField, 'type'
   >;
 }
 
+export interface SimpleRuntimeField {
+  type: SimpleRuntimeType;
+  script?: {
+    source: string;
+  };
+}
+
+export interface CompositeRuntimeField {
+  type: CompositeRuntimeType;
+  script: {
+    source: string;
+  };
+  fields: Record<string, { type: SimpleRuntimeType }>;
+}
+
 /**
  * The RuntimeField which is saved in the Data View saved object. We extend it to
  * keep a reference to a possible parent composite object.
  * To simplify the consuming code we enforce the script to be `InlineScript` type (and not also `string`)
  */
-export interface RuntimeField extends Omit<ESRuntimeField, 'script'> {
-  script?: estypes.InlineScript;
-  parentComposite?: string;
-}
+export type RuntimeField = SimpleRuntimeField | CompositeRuntimeField;
 
 /**
  * Runtime fields are like other fields when it comes to formatting or giving

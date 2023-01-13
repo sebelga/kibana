@@ -6,6 +6,6 @@
  * Side Public License, v 1.
  */
 
-export { FooStorage } from './foo_storage';
+import { ContentCoreApi } from './core';
 
-export type { FooContent } from './types';
+export type ContentManagementSetup = ContentCoreApi;

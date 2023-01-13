@@ -6,6 +6,8 @@
  * Side Public License, v 1.
  */
 
-export { FooStorage } from './foo_storage';
+import { RpcClient } from './rpc';
 
-export type { FooContent } from './types';
+export interface ContentManagementPublicStart {
+  rpc: RpcClient;
+}

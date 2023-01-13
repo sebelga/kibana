@@ -6,73 +6,46 @@
  * Side Public License, v 1.
  */
 
-import type { CommonFields, InternalFields, KibanaContent } from '../../common';
+import { Type } from '@kbn/config-schema';
+import type { Content, schemas } from '../../common';
 
-export interface ContentStorage<
-  UniqueFields extends object = Record<string, unknown>,
-  UserFields extends CommonFields = UniqueFields & CommonFields,
-  Content extends KibanaContent = InternalFields & UserFields
-> {
+export interface ContentStorage<T extends { id: string } = { id: string } & object> {
   /** Get a single item */
-  get(id: string, options?: unknown): Promise<Content>;
+  get(id: string, options: unknown): Promise<T>;
 
   /** Get multiple items */
-  mget(ids: string[], options?: unknown): Promise<Content[]>;
+  // TODO
+  // mget(ids: string[], options: unknown): Promise<object[]>;
 
   /** Create an item */
-  create(fields: UserFields, options?: unknown): Promise<Content>;
+  create(fields: object, options: unknown): Promise<T>;
 
-  // /** Update an item */
-  update<T extends Partial<UserFields>>(
-    id: string,
-    fields: T,
-    options?: unknown
-  ): Promise<Partial<T & InternalFields>>;
+  /** Update an item */
+  // TODO
+  // update(id: string, fields: object, options: unknown): Promise<object>;
 
   /** Delete an item */
-  delete(id: string, options?: unknown): Promise<Content>;
-
-  search<O extends SearchOptions = SearchOptions>(options: O): Promise<KibanaContent>;
+  // TODO
+  // delete(id: string, options: unknown): Promise<{ status: 'success' | 'error' }>;
 }
 
 // --- CONFIG
 
+export type SearchContentSerializer<T extends object = object> = (item: T) => Content;
+
+type CallsWithOutSchema = keyof Pick<typeof schemas['api'], 'get'>;
+type CallsWithInOutSchema = keyof Pick<typeof schemas['api'], 'create'>;
+
+type RpcSchemas = { [key in CallsWithOutSchema]: { out: Type<any> } } & {
+  [key in CallsWithInOutSchema]: { in: Type<any>; out: Type<any> };
+};
+
 export interface ContentConfig<S extends ContentStorage> {
   /** The storage layer for the content.*/
   storage: S;
-}
-
-// --- CONTENT FIELDS
-
-/** Interface to represent a reference field (allows to populate() content) */
-export interface Ref {
-  $id: string;
-}
-
-/** Fields that all kibana content must have (fields *not* editable by the user) */
-export interface InternalFields {
-  id: string;
-  type: string;
-  meta: {
-    createdAt: string;
-    createdBy: Ref;
-    updatedAt: string;
-    updatedBy: Ref;
+  /** Optional handler to convert the DB item to a KibanaContent */
+  toSearchContentSerializer?: SearchContentSerializer<any>;
+  schemas: {
+    rpc: RpcSchemas;
   };
-}
-
-/** Fields that _all_ content must have (fields editable by the user) */
-export interface CommonFields {
-  title: string;
-  description?: string;
-}
-
-/** Base type for all Kibana content */
-export type KibanaContent<T extends object = {}> = InternalFields & CommonFields & T;
-
-// --- CRUD
-
-export interface SearchOptions {
-  limit?: number;
-  pageCursor?: string;
 }

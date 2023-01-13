@@ -11,3 +11,5 @@ import { ContentManagementPlugin } from './plugin';
 export function plugin() {
   return new ContentManagementPlugin();
 }
+
+export type { ContentManagementPublicStart } from './types';

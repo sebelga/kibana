@@ -6,6 +6,7 @@
  * Side Public License, v 1.
  */
 
+import { schema } from '@kbn/config-schema';
 import type {
   CoreSetup,
   CoreStart,
@@ -33,10 +34,11 @@ export class ContentManagementPlugin implements Plugin {
   public setup(core: CoreSetup) {
     this.logger.info(`>>>> [${PLUGIN_ID}] setup...`);
 
-    this.coreApi = this.contentCore.setup();
+    const { api } = this.contentCore.setup();
+    this.coreApi = api;
 
     const fnHandler = new FunctionHandler<RpcContext>();
-    initRpcHandlers(fnHandler);
+    initRpcHandlers({ fnHandler });
 
     const router = core.http.createRouter();
 
@@ -49,10 +51,20 @@ export class ContentManagementPlugin implements Plugin {
 
     // --------------- DEMO -------------------
     // Add a "in memory" content
-    const contentType = 'foo';
-    const storage = new FooStorage(contentType);
-    this.coreApi.register(contentType, {
+    const storage = new FooStorage();
+    this.coreApi.register('foo', {
       storage,
+      schemas: {
+        rpc: {
+          get: {
+            out: schema.any(),
+          },
+          create: {
+            in: schema.any(),
+            out: schema.any(),
+          },
+        },
+      },
     });
 
     const addContent = async () => {

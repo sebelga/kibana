@@ -5,10 +5,10 @@
  * in compliance with, at your election, the Elastic License 2.0 or the Server
  * Side Public License, v 1.
  */
-import moment from 'moment';
+
 import type * as estypes from '@elastic/elasticsearch/lib/api/typesWithBodyKey';
 import { ElasticsearchClient, Logger } from '@kbn/core/server';
-import type { KibanaContent } from '../../../common';
+import type { Content } from '../../../common';
 
 interface Dependencies {
   logger: Logger;
@@ -16,7 +16,7 @@ interface Dependencies {
 
 const indexName = '.kibana-content-mgt';
 
-const getTimestamp = () => moment().toISOString();
+const buildId = (type: string, id: string) => `${type}#${id}`;
 
 export class ContentSearchIndex {
   private esClient: ElasticsearchClient | undefined;
@@ -31,51 +31,42 @@ export class ContentSearchIndex {
     this.createIndexIfNotExist(indexName);
   }
 
-  index<C extends KibanaContent>(content: C) {
-    if (!this.esClient) {
-      throw new Error(
-        `Missing ElasticsearchClient. Make sure that ContentSearchIndex is initialized.`
-      );
-    }
+  index(content: Content) {
+    const { id, title, description, type, meta } = content;
 
-    const {
+    const document = {
       id,
       title,
       description,
       type,
-      meta: { updatedBy },
-    } = content;
-
-    const document = {
-      title,
-      description,
-      type,
-      meta: {
-        updatedAt: getTimestamp(),
-        updatedBy: updatedBy.$id,
-      },
+      meta,
     };
 
-    return this.esClient
+    return this.getEsClient()
       .index({
         index: indexName,
-        id: `${type}#${id}`,
+        id: buildId(type, id),
         document,
       })
       .catch((e) => {
-        console.log(e);
+        // console.log(e); // Temp for debugging
         this.logger.error(new Error(`Could not add content to search index.`, { cause: e }));
       });
   }
 
-  search(searchRequest: estypes.SearchRequest) {
-    if (!this.esClient) {
-      throw new Error(
-        `Missing ElasticsearchClient. Make sure that ContentSearchIndex is initialized.`
-      );
-    }
+  getById(type: string, id: string) {
+    return this.getEsClient().search({
+      query: {
+        ids: {
+          values: [buildId(type, id)],
+        },
+      },
+      index: indexName,
+    });
+  }
 
-    return this.esClient.search({
+  search(searchRequest: estypes.SearchRequest) {
+    return this.getEsClient().search({
       ...searchRequest,
       index: indexName,
     });
@@ -84,15 +75,9 @@ export class ContentSearchIndex {
   private async createIndexIfNotExist(
     index: string
   ): Promise<'created' | 'already_exists' | 'error'> {
-    if (!this.esClient) {
-      throw new Error(
-        `Missing ElasticsearchClient. Make sure that ContentSearchIndex is initialized.`
-      );
-    }
-
     try {
-      return await this.esClient.indices
-        .get({
+      return await this.getEsClient()
+        .indices.get({
           index,
         })
         .then(() => {
@@ -108,6 +93,7 @@ export class ContentSearchIndex {
               mappings: {
                 dynamic: 'strict',
                 properties: {
+                  id: { type: 'keyword', index: false },
                   title: { type: 'text' },
                   description: { type: 'text' },
                   type: { type: 'keyword' },
@@ -119,7 +105,25 @@ export class ContentSearchIndex {
                         type: 'date',
                       },
                       updatedBy: {
-                        type: 'keyword',
+                        type: 'object',
+                        dynamic: 'false',
+                        properties: {
+                          $id: {
+                            type: 'keyword',
+                          },
+                        },
+                      },
+                      createdAt: {
+                        type: 'date',
+                      },
+                      createdBy: {
+                        type: 'object',
+                        dynamic: 'false',
+                        properties: {
+                          $id: {
+                            type: 'keyword',
+                          },
+                        },
                       },
                     },
                   },
@@ -134,5 +138,14 @@ export class ContentSearchIndex {
       this.logger.error(e);
       return 'error' as const;
     }
+  }
+
+  private getEsClient() {
+    if (!this.esClient) {
+      throw new Error(
+        `Missing ElasticsearchClient. Make sure that ContentSearchIndex is initialized.`
+      );
+    }
+    return this.esClient;
   }
 }

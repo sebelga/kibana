@@ -9,22 +9,20 @@
 import React, { FC, useEffect, useState, useCallback } from 'react';
 import { EuiButton, EuiInMemoryTable, EuiSpacer, EuiTitle } from '@elastic/eui';
 
-import { KibanaContent } from '../../../common';
+import { Content } from '../../../common';
 import { useApp } from '../context';
 
 export const SearchContentSection: FC = () => {
   const { rpc } = useApp();
-  const [items, setItems] = useState<KibanaContent[]>([]);
+  const [items, setItems] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const sendSearch = useCallback(async () => {
     setIsLoading(true);
 
-    const { hits } = (await rpc.search({})) as {
-      hits: Array<{ _id: string; _source: KibanaContent }>;
-    };
+    const { hits } = await rpc.search();
+    setItems(hits);
 
-    setItems(hits.map((hit) => ({ ...hit._source, id: hit._id })));
     setIsLoading(false);
   }, [rpc]);
 
@@ -52,6 +50,12 @@ export const SearchContentSection: FC = () => {
           {description}
         </p>
       ),
+    },
+    {
+      field: 'meta.updatedAt',
+      name: 'Last update',
+      sortable: true,
+      truncateText: false,
     },
   ];
 
@@ -93,6 +97,7 @@ export const SearchContentSection: FC = () => {
         itemId="id"
         columns={columns}
         search={search}
+        sorting={true}
       />
     </>
   );

@@ -6,32 +6,30 @@
  * Side Public License, v 1.
  */
 
-import type { KibanaContent } from '../../common';
-
-interface GetItemStart {
+export interface GetItemStart {
   type: 'getItemStart';
   contentId: string;
   contentType: string;
 }
 
-interface GetItemSuccess {
+export interface GetItemSuccess {
   type: 'getItemSuccess';
   contentId: string;
   contentType: string;
   data: unknown;
 }
 
-interface GetItemError {
+export interface GetItemError {
   type: 'getItemError';
   contentId: string;
   contentType: string;
   error: unknown;
 }
 
-interface CreateItemSuccess {
+export interface CreateItemSuccess {
   type: 'createItemSuccess';
   contentType: string;
-  data: KibanaContent;
+  data: object;
 }
 
 export type ContentEvent = GetItemStart | GetItemSuccess | GetItemError | CreateItemSuccess;

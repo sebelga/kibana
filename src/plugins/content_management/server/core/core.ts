@@ -9,14 +9,13 @@ import { Logger, ElasticsearchClient } from '@kbn/core/server';
 
 import { ContentCrud } from './crud';
 import { EventBus } from './event_bus';
+import { init as initEventListeners } from './event_listeners';
 import { ContentRegistry } from './registry';
 import { ContentSearchIndex } from './search';
 
 export interface ContentCoreApi {
   register: ContentRegistry['register'];
-  crud: <UniqueFields extends object = Record<string, unknown>>(
-    contentType: string
-  ) => ContentCrud<UniqueFields>;
+  crud: (contentType: string) => ContentCrud;
   eventBus: EventBus;
   searchIndexer: ContentSearchIndex;
 }
@@ -32,26 +31,28 @@ export class ContentCore {
     this.searchIndex = new ContentSearchIndex({ logger });
   }
 
-  setup(): ContentCoreApi {
-    const crud = <UniqueFields extends object = Record<string, unknown>>(contentType: string) => {
-      return new ContentCrud<UniqueFields>(contentType, {
+  setup(): { contentRegistry: ContentRegistry; api: ContentCoreApi } {
+    const crud = (contentType: string) => {
+      return new ContentCrud(contentType, {
         contentRegistry: this.contentRegistry,
         eventBus: this.eventBus,
       });
     };
 
-    this.eventBus.events$.subscribe((event) => {
-      if (event.type === 'createItemSuccess') {
-        // Index the data
-        this.searchIndex.index(event.data);
-      }
+    initEventListeners({
+      eventBus: this.eventBus,
+      searchIndex: this.searchIndex,
+      contentRegistry: this.contentRegistry,
     });
 
     return {
-      register: this.contentRegistry.register.bind(this.contentRegistry),
-      crud,
-      eventBus: this.eventBus,
-      searchIndexer: this.searchIndex,
+      contentRegistry: this.contentRegistry,
+      api: {
+        register: this.contentRegistry.register.bind(this.contentRegistry),
+        crud,
+        eventBus: this.eventBus,
+        searchIndexer: this.searchIndex,
+      },
     };
   }
 

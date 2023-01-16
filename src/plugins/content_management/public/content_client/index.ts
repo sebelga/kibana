@@ -6,8 +6,4 @@
  * Side Public License, v 1.
  */
 
-import { ContentClient } from './content_client';
-
-export interface ContentManagementPublicStart {
-  contentClient: ContentClient;
-}
+export * from './content_client';

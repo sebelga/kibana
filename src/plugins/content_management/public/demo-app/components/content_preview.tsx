@@ -6,8 +6,7 @@
  * Side Public License, v 1.
  */
 
-import React, { FC, useState } from 'react';
-import useDebounce from 'react-use/lib/useDebounce';
+import React, { FC } from 'react';
 import {
   EuiDescriptionListTitle,
   EuiDescriptionListDescription,
@@ -16,51 +15,39 @@ import {
   EuiCode,
 } from '@elastic/eui';
 
-import { Content } from '../../../common';
-import { useApp } from '../context';
+import { useContentItemPreview } from '../../content_client';
 
 export const ContentPreview: FC<{ type: string; id: string }> = ({ type, id }) => {
-  const { rpc } = useApp();
-  const [content, setContent] = useState<Content | null>(null);
-  const isIdEmpty = id.trim() === '';
+  const isIdEmpty = !(type && id);
 
-  useDebounce(
-    () => {
-      const load = async () => {
-        const res = await rpc.getPreview({ type, id });
-        setContent(res);
-      };
-
-      if (!isIdEmpty) {
-        load();
-      }
-    },
-    500,
-    [rpc, type, id, isIdEmpty]
-  );
+  const { isLoading, isError, data } = useContentItemPreview({ id, type }, { enabled: !isIdEmpty });
 
   if (isIdEmpty) {
     return <EuiText>Provide an id to load the content</EuiText>;
   }
 
-  if (!content) {
+  if (isLoading) {
     return <span>Loading...</span>;
+  }
+
+  if (isError) {
+    return <span>Error</span>;
   }
 
   return (
     <EuiSplitPanel.Outer grow>
       <EuiSplitPanel.Inner>
         <EuiText>
-          <EuiDescriptionListTitle>{content.title}</EuiDescriptionListTitle>
-          {Boolean(content.description) && (
-            <EuiDescriptionListDescription>{content.description}</EuiDescriptionListDescription>
+          <EuiDescriptionListTitle>{data.title}</EuiDescriptionListTitle>
+          {Boolean(data.description) && (
+            <EuiDescriptionListDescription>{data.description}</EuiDescriptionListDescription>
           )}
         </EuiText>
       </EuiSplitPanel.Inner>
       <EuiSplitPanel.Inner grow={false} color="subdued">
         <EuiText>
           <p>
-            Type <EuiCode>{content.type}</EuiCode>
+            Type <EuiCode>{data.type}</EuiCode>
           </p>
         </EuiText>
       </EuiSplitPanel.Inner>

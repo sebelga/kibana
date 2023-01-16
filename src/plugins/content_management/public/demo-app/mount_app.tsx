@@ -14,6 +14,7 @@ import type { ManagementAppMountParams } from '@kbn/management-plugin/public';
 
 import { App } from './app';
 import { ContextProvider, Context } from './context';
+import { ContentClientProvider } from '../content_client';
 
 export const mountApp = (
   coreStart: CoreStart,
@@ -23,7 +24,9 @@ export const mountApp = (
   ReactDOM.render(
     <I18nProvider>
       <ContextProvider {...ctx}>
-        <App />
+        <ContentClientProvider contentClient={ctx.contentClient}>
+          <App />
+        </ContentClientProvider>
       </ContextProvider>
     </I18nProvider>,
     element

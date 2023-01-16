@@ -6,7 +6,6 @@
  * Side Public License, v 1.
  */
 import React, { FC, useState } from 'react';
-import useDebounce from 'react-use/lib/useDebounce';
 import {
   EuiFieldText,
   EuiFlexGroup,
@@ -17,30 +16,15 @@ import {
 } from '@elastic/eui';
 import { EuiCodeEditor } from '@kbn/es-ui-shared-plugin/public';
 
-import { useApp } from '../context';
+import { useContentItem } from '../../content_client';
 
 export const ContentDetailsSection: FC = () => {
-  const { rpc } = useApp();
-
-  const [contentType, setContentType] = useState('foo');
   const [contentId, setContentId] = useState('');
-  const [content, setContent] = useState<Record<string, unknown>>({});
+  const [contentType, setContentType] = useState('foo');
 
-  const isIdEmpty = contentId.trim() === '';
-
-  useDebounce(
-    () => {
-      const load = async () => {
-        const res = await rpc.get({ type: contentType, id: contentId });
-        setContent(res as Record<string, unknown>);
-      };
-
-      if (!isIdEmpty) {
-        load();
-      }
-    },
-    500,
-    [rpc, contentType, contentId, isIdEmpty]
+  const { error, data } = useContentItem(
+    { type: contentType, id: contentId },
+    { enabled: !!(contentType && contentId) }
   );
 
   return (
@@ -73,7 +57,7 @@ export const ContentDetailsSection: FC = () => {
         </EuiFlexItem>
         <EuiFlexItem>
           <EuiCodeEditor
-            value={JSON.stringify(content, null, 4)}
+            value={JSON.stringify(error || data, null, 4)}
             width="100%"
             height="500px"
             mode="json"

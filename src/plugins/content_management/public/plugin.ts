@@ -12,6 +12,7 @@ import { PLUGIN_ID } from '../common';
 import { RpcClient } from './rpc';
 import type { Context } from './demo-app';
 import { ContentManagementPublicStart } from './types';
+import { ContentClient } from './content_client';
 
 interface SetupDependencies {
   management: ManagementSetup;
@@ -19,6 +20,7 @@ interface SetupDependencies {
 
 export class ContentManagementPlugin implements Plugin {
   private rpcClient: RpcClient | undefined;
+  private contentClient: ContentClient | undefined;
 
   public setup(core: CoreSetup, { management }: SetupDependencies): void {
     const httpClient = {
@@ -26,7 +28,9 @@ export class ContentManagementPlugin implements Plugin {
     };
 
     const rpcClient = new RpcClient(httpClient);
+    const contentClient = new ContentClient(rpcClient);
     this.rpcClient = rpcClient;
+    this.contentClient = contentClient;
 
     management.sections.section.kibana.registerApp({
       id: PLUGIN_ID,
@@ -41,6 +45,7 @@ export class ContentManagementPlugin implements Plugin {
         const [coreStart] = await core.getStartServices();
         const ctx: Context = {
           rpc: rpcClient,
+          contentClient,
         };
         return mountApp(coreStart, ctx, params);
       },
@@ -52,8 +57,12 @@ export class ContentManagementPlugin implements Plugin {
       throw new Error('Rcp client has not been initialized');
     }
 
+    if (!this.contentClient) {
+      throw new Error('ContentQueryClient has not been initialized');
+    }
+
     return {
-      rpc: this.rpcClient,
+      contentClient: this.contentClient,
     };
   }
 }

@@ -21,22 +21,16 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 
-import { CreateOut } from '../../../common';
-import { useApp } from '../context';
+import { useCreateContentItemMutation } from '../../content_client';
 
 export const CreateContentSection: FC = () => {
+  const createContentMutation = useCreateContentItemMutation();
   const [title, setContentType] = useState('');
-  const [description, setContentId] = useState('');
-  const [contentCreated, setContentCreated] = useState<CreateOut | null>(null);
-
-  const { rpc } = useApp();
+  const [description, setContentDescription] = useState('');
 
   const createContent = async () => {
     const content = { title, description };
-
-    setContentCreated(null);
-    const created = await rpc.create({ type: 'foo', data: content });
-    setContentCreated(created as any);
+    createContentMutation.mutate({ type: 'foo', data: content });
   };
 
   return (
@@ -72,17 +66,17 @@ export const CreateContentSection: FC = () => {
           <EuiFieldText
             value={description}
             onChange={(e) => {
-              setContentId(e.currentTarget.value);
+              setContentDescription(e.currentTarget.value);
             }}
             fullWidth
           />
         </EuiFormRow>
         <EuiSpacer />
 
-        {contentCreated !== null && (
+        {createContentMutation.isSuccess && (
           <>
             <EuiCallOut title="Content created!" color="success" iconType="package">
-              <EuiCodeBlock isCopyable>{contentCreated.id}</EuiCodeBlock>
+              <EuiCodeBlock isCopyable>{createContentMutation.data.id}</EuiCodeBlock>
             </EuiCallOut>
             <EuiSpacer />
           </>

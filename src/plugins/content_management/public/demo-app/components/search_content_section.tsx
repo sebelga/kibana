@@ -6,25 +6,12 @@
  * Side Public License, v 1.
  */
 
-import React, { FC, useEffect, useState, useCallback } from 'react';
+import React, { FC } from 'react';
 import { EuiButton, EuiInMemoryTable, EuiSpacer, EuiTitle } from '@elastic/eui';
-
-import { Content } from '../../../common';
-import { useApp } from '../context';
+import { useContentSearch } from '../../content_client';
 
 export const SearchContentSection: FC = () => {
-  const { rpc } = useApp();
-  const [items, setItems] = useState<Content[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const sendSearch = useCallback(async () => {
-    setIsLoading(true);
-
-    const { hits } = await rpc.search();
-    setItems(hits);
-
-    setIsLoading(false);
-  }, [rpc]);
+  const { data, isLoading, isError, refetch } = useContentSearch();
 
   const columns = [
     {
@@ -64,7 +51,7 @@ export const SearchContentSection: FC = () => {
       <EuiButton
         key="refresh"
         onClick={() => {
-          sendSearch();
+          refetch();
         }}
         isDisabled={isLoading}
       >
@@ -80,9 +67,13 @@ export const SearchContentSection: FC = () => {
     },
   };
 
-  useEffect(() => {
-    sendSearch();
-  }, [sendSearch]);
+  if (isLoading) {
+    return <span>Loading...</span>;
+  }
+
+  if (isError) {
+    return <span>Error</span>;
+  }
 
   return (
     <>
@@ -93,7 +84,7 @@ export const SearchContentSection: FC = () => {
 
       <EuiInMemoryTable
         tableCaption="Demo of Content management Search layer"
-        items={items}
+        items={data.hits}
         itemId="id"
         columns={columns}
         search={search}

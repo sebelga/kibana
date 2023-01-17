@@ -7,13 +7,24 @@
  */
 
 import React, { FC } from 'react';
-import { EuiButton, EuiInMemoryTable, EuiSpacer, EuiTitle } from '@elastic/eui';
+import {
+  EuiButton,
+  EuiInMemoryTable,
+  EuiSpacer,
+  EuiTitle,
+  EuiBasicTableColumn,
+  EuiIcon,
+  EuiToolTip,
+} from '@elastic/eui';
 import { useContentSearch } from '../../content_client';
+import { Content } from '../../../common';
+import { useApp } from '../context';
 
 export const SearchContentSection: FC = () => {
   const { data, isLoading, isError, refetch } = useContentSearch();
+  const { contentRegistry } = useApp();
 
-  const columns = [
+  const columns: Array<EuiBasicTableColumn<Content>> = [
     {
       field: 'id',
       name: 'Id',
@@ -25,6 +36,17 @@ export const SearchContentSection: FC = () => {
       name: 'Type',
       sortable: true,
       truncateText: false,
+      render: (type: string) => {
+        const contentType = contentRegistry.get(type);
+        if (!contentType) return type;
+        return (
+          <EuiToolTip content={contentType.description()}>
+            <>
+              <EuiIcon type={contentType.icon()} /> {contentType.name()}
+            </>
+          </EuiToolTip>
+        );
+      },
     },
     {
       field: 'title',

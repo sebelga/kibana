@@ -75,7 +75,7 @@ export function getMapAttributeService(): MapAttributeService {
             updatedAttributes,
             { references }
           )
-        : getContentManagement().rpc.create<
+        : getContentManagement().client.create<
             MapSavedObjectAttributes,
             any, // We probably want to type the response
             SavedObjectsCreateOptions

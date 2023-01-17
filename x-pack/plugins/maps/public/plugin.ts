@@ -42,7 +42,10 @@ import type { SpacesPluginStart } from '@kbn/spaces-plugin/public';
 import type { CloudSetup } from '@kbn/cloud-plugin/public';
 import type { LensPublicSetup } from '@kbn/lens-plugin/public';
 import { ScreenshotModePluginSetup } from '@kbn/screenshot-mode-plugin/public';
-import type { ContentManagementPublicStart } from '@kbn/content-management-plugin/public';
+import type {
+  ContentManagementPublicStart,
+  ContentManagementPublicSetup,
+} from '@kbn/content-management-plugin/public';
 import {
   createRegionMapFn,
   regionMapRenderer,
@@ -92,6 +95,7 @@ export interface MapsPluginSetupDependencies {
   licensing: LicensingPluginSetup;
   usageCollection?: UsageCollectionSetup;
   screenshotMode?: ScreenshotModePluginSetup;
+  contentManagement: ContentManagementPublicSetup;
 }
 
 export interface MapsPluginStartDependencies {
@@ -211,6 +215,13 @@ export class MapsPlugin
     plugins.visualizations.createBaseVisualization(tileMapVisType);
 
     setIsCloudEnabled(!!plugins.cloud?.isCloudEnabled);
+
+    plugins.contentManagement.registry.register({
+      id: 'map',
+      title: 'Map',
+      description: 'Map visualization',
+      icon: 'mapMarker',
+    });
 
     return {
       registerLayerWizard: registerLayerWizardExternal,

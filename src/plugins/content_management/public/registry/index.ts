@@ -6,14 +6,6 @@
  * Side Public License, v 1.
  */
 
-import { ContentClient } from './content_client';
-import { ContentRegistry } from './registry';
-
-export interface ContentManagementPublicSetup {
-  registry: ContentRegistry;
-}
-
-export interface ContentManagementPublicStart {
-  client: ContentClient;
-  registry: ContentRegistry;
-}
+export * from './types';
+export * from './content_type';
+export * from './registry';

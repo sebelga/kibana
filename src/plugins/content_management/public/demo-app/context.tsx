@@ -10,10 +10,12 @@ import React, { createContext, FC, useContext } from 'react';
 
 import { RpcClient } from '../rpc';
 import type { ContentClient } from '../content_client';
+import { ContentRegistry } from '../registry';
 
 export interface Context {
   rpc: RpcClient;
   contentClient: ContentClient;
+  contentRegistry: ContentRegistry;
 }
 
 const AppContext = createContext<Context | null>(null);

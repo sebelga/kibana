@@ -13,13 +13,16 @@ export type {
   MapGetOut,
   MapCreateIn,
   MapCreateOut,
-  CreateOptions,
   MapUpdateIn,
   MapUpdateOut,
-  UpdateOptions,
   MapDeleteIn,
   MapDeleteOut,
   MapSearchIn,
-  MapSearchOptions,
   MapSearchOut,
 } from './types';
+
+export type {
+  CreateOptions,
+  UpdateOptions,
+  SearchOptions as MapSearchOptions,
+} from './types_abstracted';
